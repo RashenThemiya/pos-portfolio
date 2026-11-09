@@ -1,0 +1,74 @@
+/* ad (adapted from DMS) */
+#promo{padding-block:20px 0}
+.ad-wrap{container-type:inline-size;display:grid}
+.ad-wrap>.ad{grid-area:1/1;transition:opacity .7s,visibility .7s}
+.ad-wrap>.ad:not(.on){opacity:0;visibility:hidden}
+.ad-dots{display:flex;justify-content:center;gap:8px;margin-top:14px}
+.ad-dots button{position:relative;overflow:hidden;font:600 13px/1 var(--f-body);color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:9px 16px;cursor:pointer}
+.ad-dots button[aria-pressed="true"]{color:var(--fg);border-color:rgba(242,92,5,.5)}
+.ad-dots button[aria-pressed="true"]::after{content:"";position:absolute;left:0;bottom:0;height:2px;background:var(--orange);animation:adBar var(--dur,10s) linear forwards}
+.ad-dots button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+@keyframes adBar{from{width:0}to{width:100%}}
+.ad{position:relative;overflow:hidden;aspect-ratio:16/9;max-width:100%;border-radius:2cqw;background:radial-gradient(80% 70% at 50% 30%,#172a50 0%,#0b1426 75%);color:#fff;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 5cqw 9cqw;justify-content:center}
+.ad>*{position:relative}
+.ad-head{font-weight:900;font-size:3.4cqw;line-height:1.25}
+.ad[lang="en"] .ad-head{font-family:var(--f-display);font-weight:800;letter-spacing:-.02em;font-size:3.6cqw}
+.ad-head em,.ad-close em{font-style:normal;color:#ff6b0f}
+.ad-sub{font-weight:600;font-size:1.6cqw;color:#c7d0e4;margin-top:.5cqw}
+.ad-sub b{color:#ffb23e;font-weight:800}
+.ad-grid{display:grid;grid-template-columns:1.2fr auto 1fr;gap:.9cqw 1.2cqw;width:min(86cqw,100%);margin-top:2cqw;align-items:center}
+.ad-col{font-weight:800;font-size:1.25cqw;letter-spacing:.08em;text-transform:uppercase;text-align:left;padding-left:.4cqw}
+.ad[lang="si"] .ad-col{letter-spacing:0;font-size:1.45cqw}
+.ad-colq{color:#ff8a98}.ad-cola{color:#4fe0ad}
+.ad-q,.ad-a{display:flex;align-items:center;gap:1cqw;text-align:left;padding:.6cqw 1.2cqw;border-radius:1cqw;font-size:1.75cqw;line-height:1.3;min-height:3.8cqw;white-space:nowrap}
+.ad-q{background:rgba(240,69,90,.12);border:.12cqw solid rgba(240,69,90,.35);font-weight:600}
+.ad-a{background:rgba(34,195,142,.13);border:.12cqw solid rgba(34,195,142,.45);font-weight:800}
+.ad-q i,.ad-a i{flex:none;width:2cqw;height:2cqw;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--f-body);font-weight:800;font-size:1.25cqw}
+.ad-q i{background:#f0455a;color:#fff}.ad-a i{background:#22c38e;color:#06281c}
+.ad-arr{color:#ff6b0f;font-weight:800;font-size:2.4cqw}
+.ad-close{font-weight:900;font-size:2.5cqw;margin-top:2cqw;line-height:1.3}
+.ad[lang="en"] .ad-close{font-family:var(--f-display);font-weight:800}
+.ad-foot{position:absolute;left:0;right:0;bottom:0;height:9cqw;display:grid;grid-template-columns:1fr auto 1fr;align-items:end;padding:0 6cqw 1.9cqw;background:#eef1f6;color:#33415f;font-size:1.45cqw;clip-path:ellipse(75% 100% at 50% 100%)}
+.ad-foot>span:first-child{justify-self:start}.ad-foot>span:last-child{justify-self:end}
+.ad-foot b{color:#e85d0c;font-weight:700}
+.ad-logo{display:flex;align-items:center;gap:.8cqw;text-align:left}
+.ad-logo .brand-mark{width:3.6cqw;height:3.1cqw}
+.ad-logo small{display:block;font-weight:700;font-size:.8cqw;letter-spacing:.3em;color:#0b1426}
+.ad-logo strong{display:block;font:800 2.6cqw/1 var(--f-display);color:#ff6b0f}
+.ad-logo em{display:block;font-style:normal;font-size:.8cqw;color:#5d6a85;margin-top:.2cqw}
+.ad.play .ad-head{animation:adUp .7s .1s both}
+.ad.play .ad-sub{animation:adUp .7s .3s both}
+.ad.play .ad-col{animation:adFade .6s .5s both}
+.ad.play .ad-q{animation:adInL .6s calc(.6s + var(--i)*.22s) both}
+.ad.play .ad-arr{animation:adFade .4s calc(.75s + var(--i)*.22s) both,adNudge 1.4s calc(1.6s + var(--i)*.12s) ease-in-out infinite}
+.ad.play .ad-a{animation:adInR .6s calc(.8s + var(--i)*.22s) both}
+.ad.play .ad-a i{animation:adPop .5s calc(1.1s + var(--i)*.22s) both}
+.ad.play .ad-close{animation:adUp .7s 2s both}
+.ad.play .ad-logo .brand-mark{animation:adSpin 1s 2.2s both}
+@keyframes adUp{from{opacity:0;transform:translateY(2cqw)}to{opacity:1;transform:none}}
+@keyframes adFade{from{opacity:0}to{opacity:1}}
+@keyframes adInL{from{opacity:0;transform:translateX(-4cqw)}to{opacity:1;transform:none}}
+@keyframes adInR{from{opacity:0;transform:translateX(4cqw)}to{opacity:1;transform:none}}
+@keyframes adPop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes adNudge{0%,100%{transform:none}50%{transform:translateX(.7cqw)}}
+@keyframes adSpin{from{transform:rotate(-120deg) scale(.4);opacity:0}to{transform:none;opacity:1}}
+@container (max-width:640px){
+  .ad{aspect-ratio:auto;padding:6cqw 4.5cqw 0;border-radius:4cqw;justify-content:flex-start}
+  .ad-head,.ad[lang="en"] .ad-head{font-size:max(24px,7.4cqw)}
+  .ad-sub{font-size:max(14px,4cqw);margin-top:2cqw}
+  .ad-grid{grid-template-columns:1fr;gap:1.6cqw;margin-top:5cqw;width:100%}
+  .ad-col,.ad-grid>div:empty{display:none}
+  .ad-q,.ad-a{white-space:normal;font-size:max(14px,4.3cqw);padding:2.4cqw 3cqw;border-radius:2.6cqw;gap:2.4cqw;min-height:0}
+  .ad-q i,.ad-a i{width:5.6cqw;height:5.6cqw;font-size:3cqw}
+  .ad-arr{transform:rotate(90deg);font-size:4.6cqw;line-height:1}
+  .ad-a{margin-bottom:3cqw}
+  .ad-close{font-size:max(20px,5.8cqw)}
+  .ad-foot{position:relative;align-self:stretch;height:auto;margin:6cqw -4.5cqw 0;grid-template-columns:1fr;justify-items:center;gap:2cqw;padding:12cqw 4cqw 6cqw;font-size:max(14px,4cqw);clip-path:ellipse(110% 100% at 50% 100%)}
+  .ad-foot>span{justify-self:center!important}
+  .ad-logo{order:-1}.ad-logo .brand-mark{width:9cqw;height:8cqw}.ad-logo small{font-size:max(9px,2.2cqw)}.ad-logo strong{font-size:7cqw}.ad-logo em{font-size:max(10px,2.4cqw)}
+}
+
+
+.ad-paused .ad *, .ad-paused .ad-dots button::after{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){.ad-dots button[aria-pressed="true"]::after{animation:none!important;width:100%}}
+@media (hover:none) and (pointer:coarse){.ad-dots button{min-height:44px}}

@@ -1,0 +1,1273 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pentarix POS</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+Sinhala:wght@500;600;800;900&display=swap">
+<style>
+/* Layout: sister page to Pentarix DMS. Light page, dark "till screen" islands. The receipt (mono figures, dashed tear lines) is the motif: hero till -> ad -> why -> checkout flow -> features -> screens -> plans. Deliberately single light theme with explicit dark islands. */
+:root{
+  --ink:#ffffff; --panel:#f3f4f8; --line:#e2e5ec; --fg:#111827; --muted:#5a6476;
+  --orange:#f25c05; --orange-soft:rgba(242,92,5,.09); --ok:#0e9a68; --bad:#e0384d;
+  --d-ink:#0b1120; --d-panel:#111a2c; --d-line:#22304a; --d-fg:#e8ecf4; --d-muted:#93a0b8; --d-orange:#ff6b0f; --d-ok:#22c38e;
+  --f-display:"Bricolage Grotesque","Noto Sans Sinhala","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree","Noto Sans Sinhala","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+body{background:var(--ink);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--ink)}
+a{color:inherit}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.02em}
+p{margin:0}
+.wrap{max-width:1280px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--orange)}
+.btn{display:inline-flex;align-items:center;gap:8px;font:600 15px/1 var(--f-body);padding:14px 20px;border-radius:10px;text-decoration:none;border:1px solid transparent;transition:transform .15s,background .15s;cursor:pointer}
+.btn:focus-visible{outline:2px solid var(--orange);outline-offset:3px}
+.btn-primary{background:var(--orange);color:#160800}
+.btn-primary:hover{transform:translateY(-1px);background:#ff7d2b}
+.btn-ghost{border-color:var(--line);color:var(--fg);background:transparent}
+.btn-ghost:hover{border-color:var(--muted)}
+
+/* nav */
+header.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(255,255,255,.9);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .25s}
+header.nav.scrolled{border-bottom-color:var(--line)}
+.nav-inner{height:72px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;justify-self:start}
+.logo small{display:block;font:700 9px/1 var(--f-body);letter-spacing:.3em;color:var(--fg)}
+.logo b{display:block;font:800 22px/1 var(--f-display);color:var(--orange);letter-spacing:-.01em}
+.nav-links{display:flex;gap:28px;height:72px}
+.nav-links a{position:relative;display:flex;align-items:center;text-decoration:none;font:500 15px/1 var(--f-body);color:var(--muted);white-space:nowrap}
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--orange);transform:scaleX(0);transition:transform .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--fg)}
+.nav-links a.active::after{transform:scaleX(1)}
+.nav-links a:focus-visible,.menu-btn:focus-visible,.logo:focus-visible{outline:2px solid var(--orange);outline-offset:4px;border-radius:4px}
+.nav-right{display:flex;align-items:center;gap:10px;justify-self:end}
+.nav-cta{padding:12px 18px;font-size:14px}
+.menu-btn{display:none;width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer;place-items:center}
+.menu-btn svg{width:20px;height:20px}
+.mobile-menu{border-top:1px solid var(--line);padding-block:10px 18px;display:flex;flex-direction:column}
+.mobile-menu a{text-decoration:none;color:var(--fg);font:600 16px var(--f-body);padding:14px 4px;border-bottom:1px solid var(--line)}
+.mobile-menu .btn{justify-content:center;margin-top:14px;border-bottom:0}
+.lang{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:3px}
+.lang button{font:600 13px/1 var(--f-body);color:var(--muted);background:transparent;border:0;border-radius:7px;padding:9px 11px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--orange);color:#160800}
+.lang button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+@media (max-width:1060px){.nav-links{gap:18px}.nav-links a{font-size:14px}}
+@media (max-width:880px){.nav-inner{grid-template-columns:1fr auto}.nav-links{display:none}.menu-btn{display:grid}}
+@media (max-width:440px){.nav-cta{display:none}}
+section[id]{scroll-margin-top:84px}
+
+/* hero */
+.hero{background:var(--d-ink);color:var(--d-fg);position:relative;overflow:hidden}
+section.hero{padding-block:120px 72px;min-height:660px}
+#city3d{position:absolute;inset:0}
+#city3d canvas{display:block;width:100%!important;height:100%!important}
+#city3d.nogl{background:radial-gradient(70% 80% at 70% 40%,#1b2b4c,#0b1120)}
+.hero-scrim{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(11,17,32,.94) 0%,rgba(11,17,32,.8) 32%,rgba(11,17,32,.2) 62%,rgba(11,17,32,0) 80%),linear-gradient(0deg,rgba(11,17,32,.85),rgba(11,17,32,0) 30%)}
+.hero .wrap{position:relative;display:flex;justify-content:space-between;align-items:flex-end;gap:32px;flex-wrap:wrap}
+.hero-copy{max-width:640px;min-width:0}
+.netcard{padding:16px 18px;background:rgba(11,17,32,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:14px;min-width:0}
+.net-stats{display:grid;grid-template-columns:repeat(4,auto);gap:4px 26px;margin-top:12px}
+.net-stats b{display:block;font:800 26px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.net-stats small{font-size:12px;color:var(--d-muted)}
+.legend3d{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:12px;color:var(--d-muted)}
+.legend3d span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--c)}
+.pane .till{max-width:540px;margin:0 auto}
+.hero .eyebrow{color:var(--d-orange)}
+.hero h1{font-size:clamp(38px,4.6vw,64px);line-height:1.04;font-weight:800;margin-top:16px}
+.hero h1 em{font-style:normal;color:var(--d-orange)}
+.hero .lede{color:#c3cbdb;font-size:18px;max-width:54ch;margin-top:20px}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.hero .btn-ghost{border-color:rgba(255,255,255,.22);color:var(--d-fg)}
+.facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.facts span{display:inline-flex;align-items:center;gap:8px;font:500 14px/1 var(--f-body);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:9px 14px 9px 10px}
+.facts span::before{content:"✓";display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:rgba(34,195,142,.18);color:var(--d-ok);font-size:11px;font-weight:700}
+@media (max-width:900px){section.hero{padding-block:64px 32px;min-height:0}.hero-scrim{background:linear-gradient(180deg,rgba(11,17,32,.88),rgba(11,17,32,.7) 60%,rgba(11,17,32,.9))}.net-stats{grid-template-columns:repeat(2,auto)}}
+
+/* till mock (hero) */
+.till{background:var(--d-panel);border:1px solid var(--d-line);border-radius:18px;overflow:hidden;box-shadow:0 40px 90px -40px rgba(0,0,0,.8);min-width:0}
+.till-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--d-line);font-size:12.5px;color:var(--d-muted)}
+.till-bar b{color:var(--d-fg);font-weight:600}
+.live{display:inline-flex;align-items:center;gap:6px;color:var(--d-ok);font-weight:600}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 0 3px rgba(34,195,142,.22)}
+.scan{position:relative;margin:14px 16px 4px;display:flex;align-items:center;gap:10px;background:var(--d-ink);border:1px solid var(--d-line);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--d-muted);overflow:hidden}
+.scan svg{flex:none;width:18px;height:18px;color:var(--d-orange)}
+.scan .code{color:var(--d-fg)}
+.beam{position:absolute;left:0;top:0;bottom:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,107,15,.25),transparent);transform:translateX(-100%)}
+.beam.go{animation:beam .6s ease-out}
+@keyframes beam{to{transform:translateX(260%)}}
+.lines{list-style:none;margin:0;padding:6px 16px 0;min-height:236px}
+.lines li{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:10px 0;border-bottom:1px dashed var(--d-line);font-size:14px}
+.lines li.in{animation:lineIn .45s ease-out}
+@keyframes lineIn{from{opacity:0;transform:translateY(-6px);background:rgba(255,107,15,.12)}to{opacity:1;transform:none}}
+.lines .nm{font-weight:600;min-width:0}
+.lines .sub{grid-column:1;font-size:12px;color:var(--d-muted)}
+.lines .amt{text-align:right}
+.lines .promo{grid-column:1/-1;display:flex;justify-content:space-between;font-size:12.5px;color:var(--d-ok)}
+.tot{margin:6px 16px 0;padding:12px 0;border-top:2px solid var(--d-fg);display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:13.5px;color:var(--d-muted)}
+.tot .big{font:800 26px/1.1 var(--f-display);color:var(--d-fg)}
+.tot .big.mono{font-family:var(--f-mono);font-weight:700;font-size:24px}
+.pays{display:flex;gap:8px;flex-wrap:wrap;padding:4px 16px 16px}
+.pays span{font-size:12.5px;font-weight:600;border:1px solid var(--d-line);border-radius:999px;padding:6px 10px;color:var(--d-muted);transition:all .3s}
+.pays span.on{border-color:var(--d-orange);color:var(--d-fg);background:rgba(255,107,15,.12)}
+.paid{margin:0 16px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(34,195,142,.12);border:1px solid rgba(34,195,142,.35);border-radius:10px;padding:10px 12px;font-size:13.5px;color:var(--d-ok);font-weight:600;transition:opacity .3s}
+.paid.off{opacity:0}
+
+/* ad (adapted from DMS) */
+#promo{padding-block:20px 0}
+.ad-wrap{container-type:inline-size;display:grid}
+.ad-wrap>.ad{grid-area:1/1;transition:opacity .7s,visibility .7s}
+.ad-wrap>.ad:not(.on){opacity:0;visibility:hidden}
+.ad-dots{display:flex;justify-content:center;gap:8px;margin-top:14px}
+.ad-dots button{position:relative;overflow:hidden;font:600 13px/1 var(--f-body);color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:9px 16px;cursor:pointer}
+.ad-dots button[aria-pressed="true"]{color:var(--fg);border-color:rgba(242,92,5,.5)}
+.ad-dots button[aria-pressed="true"]::after{content:"";position:absolute;left:0;bottom:0;height:2px;background:var(--orange);animation:adBar var(--dur,10s) linear forwards}
+.ad-dots button:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+@keyframes adBar{from{width:0}to{width:100%}}
+.ad{position:relative;overflow:hidden;aspect-ratio:16/9;max-width:100%;border-radius:2cqw;background:radial-gradient(80% 70% at 50% 30%,#172a50 0%,#0b1426 75%);color:#fff;display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 5cqw 9cqw;justify-content:center}
+.ad>*{position:relative}
+.ad-head{font-weight:900;font-size:3.4cqw;line-height:1.25}
+.ad[lang="en"] .ad-head{font-family:var(--f-display);font-weight:800;letter-spacing:-.02em;font-size:3.6cqw}
+.ad-head em,.ad-close em{font-style:normal;color:#ff6b0f}
+.ad-sub{font-weight:600;font-size:1.6cqw;color:#c7d0e4;margin-top:.5cqw}
+.ad-sub b{color:#ffb23e;font-weight:800}
+.ad-grid{display:grid;grid-template-columns:1.2fr auto 1fr;gap:.9cqw 1.2cqw;width:min(86cqw,100%);margin-top:2cqw;align-items:center}
+.ad-col{font-weight:800;font-size:1.25cqw;letter-spacing:.08em;text-transform:uppercase;text-align:left;padding-left:.4cqw}
+.ad[lang="si"] .ad-col{letter-spacing:0;font-size:1.45cqw}
+.ad-colq{color:#ff8a98}.ad-cola{color:#4fe0ad}
+.ad-q,.ad-a{display:flex;align-items:center;gap:1cqw;text-align:left;padding:.6cqw 1.2cqw;border-radius:1cqw;font-size:1.75cqw;line-height:1.3;min-height:3.8cqw;white-space:nowrap}
+.ad-q{background:rgba(240,69,90,.12);border:.12cqw solid rgba(240,69,90,.35);font-weight:600}
+.ad-a{background:rgba(34,195,142,.13);border:.12cqw solid rgba(34,195,142,.45);font-weight:800}
+.ad-q i,.ad-a i{flex:none;width:2cqw;height:2cqw;border-radius:50%;display:grid;place-items:center;font-style:normal;font-family:var(--f-body);font-weight:800;font-size:1.25cqw}
+.ad-q i{background:#f0455a;color:#fff}.ad-a i{background:#22c38e;color:#06281c}
+.ad-arr{color:#ff6b0f;font-weight:800;font-size:2.4cqw}
+.ad-close{font-weight:900;font-size:2.5cqw;margin-top:2cqw;line-height:1.3}
+.ad[lang="en"] .ad-close{font-family:var(--f-display);font-weight:800}
+.ad-foot{position:absolute;left:0;right:0;bottom:0;height:9cqw;display:grid;grid-template-columns:1fr auto 1fr;align-items:end;padding:0 6cqw 1.9cqw;background:#eef1f6;color:#33415f;font-size:1.45cqw;clip-path:ellipse(75% 100% at 50% 100%)}
+.ad-foot>span:first-child{justify-self:start}.ad-foot>span:last-child{justify-self:end}
+.ad-foot b{color:#e85d0c;font-weight:700}
+.ad-logo{display:flex;align-items:center;gap:.8cqw;text-align:left}
+.ad-logo svg{width:3.6cqw;height:3.1cqw}
+.ad-logo small{display:block;font-weight:700;font-size:.8cqw;letter-spacing:.3em;color:#0b1426}
+.ad-logo strong{display:block;font:800 2.6cqw/1 var(--f-display);color:#ff6b0f}
+.ad-logo em{display:block;font-style:normal;font-size:.8cqw;color:#5d6a85;margin-top:.2cqw}
+.ad.play .ad-head{animation:adUp .7s .1s both}
+.ad.play .ad-sub{animation:adUp .7s .3s both}
+.ad.play .ad-col{animation:adFade .6s .5s both}
+.ad.play .ad-q{animation:adInL .6s calc(.6s + var(--i)*.22s) both}
+.ad.play .ad-arr{animation:adFade .4s calc(.75s + var(--i)*.22s) both,adNudge 1.4s calc(1.6s + var(--i)*.12s) ease-in-out infinite}
+.ad.play .ad-a{animation:adInR .6s calc(.8s + var(--i)*.22s) both}
+.ad.play .ad-a i{animation:adPop .5s calc(1.1s + var(--i)*.22s) both}
+.ad.play .ad-close{animation:adUp .7s 2s both}
+.ad.play .ad-logo svg{animation:adSpin 1s 2.2s both}
+@keyframes adUp{from{opacity:0;transform:translateY(2cqw)}to{opacity:1;transform:none}}
+@keyframes adFade{from{opacity:0}to{opacity:1}}
+@keyframes adInL{from{opacity:0;transform:translateX(-4cqw)}to{opacity:1;transform:none}}
+@keyframes adInR{from{opacity:0;transform:translateX(4cqw)}to{opacity:1;transform:none}}
+@keyframes adPop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes adNudge{0%,100%{transform:none}50%{transform:translateX(.7cqw)}}
+@keyframes adSpin{from{transform:rotate(-120deg) scale(.4);opacity:0}to{transform:none;opacity:1}}
+@container (max-width:640px){
+  .ad{aspect-ratio:auto;padding:6cqw 4.5cqw 0;border-radius:4cqw;justify-content:flex-start}
+  .ad-head,.ad[lang="en"] .ad-head{font-size:7.4cqw}
+  .ad-sub{font-size:4cqw;margin-top:2cqw}
+  .ad-grid{grid-template-columns:1fr;gap:1.6cqw;margin-top:5cqw;width:100%}
+  .ad-col,.ad-grid>div:empty{display:none}
+  .ad-q,.ad-a{white-space:normal;font-size:4.3cqw;padding:2.4cqw 3cqw;border-radius:2.6cqw;gap:2.4cqw;min-height:0}
+  .ad-q i,.ad-a i{width:5.6cqw;height:5.6cqw;font-size:3cqw}
+  .ad-arr{transform:rotate(90deg);font-size:4.6cqw;line-height:1}
+  .ad-a{margin-bottom:3cqw}
+  .ad-close{font-size:5.8cqw}
+  .ad-foot{position:relative;align-self:stretch;height:auto;margin:6cqw -4.5cqw 0;grid-template-columns:1fr;justify-items:center;gap:2cqw;padding:12cqw 4cqw 6cqw;font-size:4cqw;clip-path:ellipse(110% 100% at 50% 100%)}
+  .ad-foot>span{justify-self:center!important}
+  .ad-logo{order:-1}.ad-logo svg{width:9cqw;height:8cqw}.ad-logo small{font-size:2.2cqw}.ad-logo strong{font-size:7cqw}.ad-logo em{font-size:2.4cqw}
+}
+
+/* sections */
+section{padding-block:76px}
+.band{background:var(--panel)}
+.sec-head{max-width:740px;margin-bottom:36px}
+.sec-head h2{font-size:clamp(30px,4vw,44px);line-height:1.08;font-weight:700}
+.sec-head p{color:var(--muted);margin-top:14px;font-size:17px}
+
+/* why */
+.why-head{display:grid;grid-template-columns:1fr 1fr;gap:32px;padding-bottom:12px;border-bottom:2px solid var(--fg);font:700 13px var(--f-body);text-transform:uppercase;letter-spacing:.06em}
+.why-head span:first-child{color:var(--muted)}.why-head span:last-child{color:var(--orange)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:32px;border-bottom:1px solid var(--line);padding:20px 0}
+.pair p{font-size:17px;padding-left:28px;position:relative}
+.pair p::before{position:absolute;left:0;top:3px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font:700 11px var(--f-body)}
+.before{color:var(--muted)}.before::before{content:"✕";background:rgba(224,56,77,.13);color:var(--bad)}
+.after{font-weight:500}.after::before{content:"✓";background:rgba(14,154,104,.14);color:var(--ok)}
+@media (max-width:640px){.why-head{display:none}.pair{grid-template-columns:1fr;gap:10px}}
+
+/* flow */
+.flow{background:var(--d-ink);color:var(--d-fg);border-radius:20px;overflow:hidden;display:grid;grid-template-columns:1fr 1.15fr}
+.flow-steps{list-style:none;margin:0;padding:12px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--d-line);counter-reset:st}
+.flow-steps li{position:relative;border-radius:12px;padding:14px 16px 14px 56px;cursor:pointer;transition:background .2s}
+.flow-steps li::before{counter-increment:st;content:counter(st);position:absolute;left:16px;top:14px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:800 13px var(--f-body);border:1px solid var(--d-line);color:var(--d-muted)}
+.flow-steps li b{display:block;font:700 16px/1.3 var(--f-display);color:var(--d-muted)}
+.flow-steps li span{display:block;font-size:13.5px;color:var(--d-muted);margin-top:4px}
+.flow-steps li i{position:absolute;left:16px;right:16px;bottom:6px;height:2px;border-radius:2px;background:var(--d-orange);transform-origin:left;transform:scaleX(var(--p,0))}
+.flow-steps li.on{background:rgba(255,107,15,.08)}
+.flow-steps li.on b{color:var(--d-fg)}
+.flow-steps li.on::before{background:var(--d-orange);border-color:var(--d-orange);color:#160800}
+.flow-steps li:focus-visible{outline:2px solid var(--d-orange);outline-offset:-2px}
+.stage{position:relative;padding:28px;display:grid;place-items:center;min-height:420px;background:radial-gradient(70% 70% at 50% 40%,#16233d,#0b1120)}
+.scene{position:absolute;inset:28px;display:grid;place-items:center;opacity:0;visibility:hidden;transition:opacity .45s,visibility .45s}
+.scene.on{opacity:1;visibility:visible}
+.card-d{background:var(--d-panel);border:1px solid var(--d-line);border-radius:14px;padding:18px;width:min(380px,100%)}
+.card-d h4{margin:0 0 12px;font:700 15px var(--f-display);display:flex;justify-content:space-between;gap:8px}
+.card-d h4 small{font:500 12px var(--f-body);color:var(--d-muted)}
+.row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--d-line);font-size:14px}
+.row:last-child{border-bottom:0}
+.row .k{color:var(--d-muted)}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 9px;border-radius:999px;background:rgba(34,195,142,.14);color:var(--d-ok)}
+.chip.warn{background:rgba(255,178,62,.14);color:#ffb23e}
+.chip.org{background:rgba(255,107,15,.14);color:var(--d-orange)}
+.barcode{display:flex;gap:2px;height:46px;align-items:stretch;margin:4px 0 10px}
+.barcode i{background:var(--d-fg);border-radius:1px}
+.receipt{background:#fbfaf6;color:#1b1f2a;width:min(300px,100%);padding:18px 18px 22px;font-family:var(--f-mono);font-size:12.5px;line-height:1.55;-webkit-mask:radial-gradient(circle 6px at 50% 100%,transparent 98%,#000) 0 0/14px 100% repeat-x;mask:radial-gradient(circle 6px at 50% 100%,transparent 98%,#000) 0 0/14px 100%}
+.receipt .c{text-align:center}
+.receipt hr{border:0;border-top:1px dashed #9aa0ad;margin:8px 0}
+.receipt .r{display:flex;justify-content:space-between;gap:8px}
+@media (max-width:900px){.flow{grid-template-columns:1fr}.flow-steps{border-right:0;border-bottom:1px solid var(--d-line)}.flow-steps li span{display:none}.flow-steps li.on span{display:block}.stage{min-height:380px}}
+
+/* cartoon story */
+.story{background:var(--d-panel);border:1px solid var(--d-line);border-radius:20px;overflow:hidden;color:var(--d-fg)}
+.stage-wrap{overflow:hidden}
+#story{display:block;width:100%;height:auto}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--d-line);counter-reset:st}
+.steps li{position:relative;padding:18px 18px 20px;cursor:pointer;border-left:1px solid var(--d-line);min-width:0;transition:background .2s}
+.steps li:first-child{border-left:0}
+.steps li i{position:absolute;left:0;top:0;height:3px;width:calc(var(--p,0)*100%);background:var(--d-orange)}
+.steps li b{display:flex;align-items:center;gap:10px;font:700 15px/1.3 var(--f-display);color:var(--d-muted)}
+.steps li b::before{counter-increment:st;content:counter(st);flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:800 13px var(--f-body);background:var(--d-ink);border:1px solid var(--d-line)}
+.steps li span{display:block;font-size:13.5px;line-height:1.5;color:var(--d-muted);margin-top:8px}
+.steps li.on{background:rgba(255,107,15,.07)}
+.steps li.on b{color:var(--d-fg)}
+.steps li.on b::before{background:var(--d-orange);border-color:var(--d-orange);color:#160800}
+.steps li:focus-visible{outline:2px solid var(--d-orange);outline-offset:-2px}
+@media (max-width:900px){.steps{grid-template-columns:1fr}.steps li{border-left:0;border-top:1px solid var(--d-line);padding:14px 16px}.steps li:first-child{border-top:0}.steps li span{display:none}.steps li.on span{display:block}}
+@media (max-width:640px){.stage-wrap{overflow-x:auto}#story{width:900px;max-width:none}}
+
+/* features */
+.groups{display:grid;grid-template-columns:repeat(3,1fr);gap:40px 44px}
+.grp{min-width:0}
+.grp-h{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.grp-h .ic{flex:none;width:38px;height:38px;border-radius:10px;background:var(--ink);border:1px solid var(--line);color:var(--orange);display:grid;place-items:center}
+.grp-h .ic svg{width:20px;height:20px}
+.grp-h h3{font-size:19px}
+.grp ul{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
+.grp li{font-size:15px;color:var(--muted);padding-left:16px;position:relative}
+.grp li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:2px;background:var(--orange)}
+.grp li b{color:var(--fg);font-weight:600}
+@media (max-width:980px){.groups{grid-template-columns:1fr 1fr}}
+@media (max-width:600px){.groups{grid-template-columns:1fr}}
+
+/* payments strip */
+.paystrip{display:flex;flex-wrap:wrap;gap:10px;margin-top:44px;align-items:center}
+.paystrip strong{font:700 14px var(--f-body);margin-right:6px}
+.paystrip span{font:600 13px var(--f-body);border:1px solid var(--line);background:var(--ink);border-radius:999px;padding:8px 14px}
+
+/* screens */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.tab{font:600 14px var(--f-body);background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:9px 16px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--orange);color:#160800;border-color:var(--orange)}
+.tab:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.frame{border:1px solid var(--d-line);border-radius:14px;overflow:hidden;background:var(--d-ink);color:var(--d-fg);box-shadow:0 24px 60px -36px rgba(17,24,39,.5)}
+.frame .bar{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid var(--d-line)}
+.frame .bar i{width:10px;height:10px;border-radius:50%;background:var(--d-line)}
+.frame .bar span{margin-left:10px;font:500 12px var(--f-mono);color:var(--d-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pane{padding:22px;min-height:400px}
+.pane[hidden]{display:none}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--d-panel);border:1px solid var(--d-line);border-radius:12px;padding:14px;min-width:0}
+.kpi small{display:block;font-size:12px;color:var(--d-muted)}
+.kpi b{display:block;font:700 22px/1.2 var(--f-mono);margin-top:6px}
+.kpi em{font-style:normal;font-size:12px;color:var(--d-ok)}
+.two{display:grid;grid-template-columns:1.5fr 1fr;gap:12px;margin-top:12px}
+.box{background:var(--d-panel);border:1px solid var(--d-line);border-radius:12px;padding:16px;min-width:0}
+.box h5{margin:0 0 12px;font:600 13px var(--f-body);color:var(--d-muted)}
+.bars{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;align-items:end;height:160px;border-bottom:1px solid var(--d-line);background:repeating-linear-gradient(0deg,transparent 0 39px,rgba(255,255,255,.04) 39px 40px)}
+.bars div{background:linear-gradient(180deg,#ff8a3d,#ff6b0f);border-radius:4px 4px 0 0;min-height:4px}
+.bars div.last{background:linear-gradient(180deg,#4fe0ad,#22c38e)}
+.blabels{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-top:6px;font:500 11px var(--f-mono);color:var(--d-muted);text-align:center}
+.mix{display:flex;height:12px;border-radius:999px;overflow:hidden;margin-bottom:12px}
+.legend div{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;border-bottom:1px dashed var(--d-line)}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:8px;background:var(--c)}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px}
+table.t th{text-align:left;font-weight:600;color:var(--d-muted);font-size:12px;padding:8px 10px;border-bottom:1px solid var(--d-line)}
+table.t td{padding:10px;border-bottom:1px dashed var(--d-line)}
+table.t td.n,table.t th.n{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.tscroll{overflow-x:auto}
+.caption{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px}
+.caption h3{font-size:22px}
+.caption p{color:var(--muted)}
+@media (max-width:860px){.kpis{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.caption{grid-template-columns:1fr}}
+
+/* sri lanka strip */
+.local{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
+.local div{border-top:2px solid var(--fg);padding-top:14px;min-width:0}
+.local b{display:block;font:700 18px var(--f-display)}
+.local p{color:var(--muted);font-size:15px;margin-top:6px}
+@media (max-width:900px){.local{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.local{grid-template-columns:1fr}}
+
+/* plans */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.plan{position:relative;background:var(--ink);border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;min-width:0}
+.plan.pop{border-color:var(--orange)}
+.plan .tag{position:absolute;top:-12px;left:28px;background:var(--orange);color:#160800;font:700 12px/1 var(--f-body);padding:7px 12px;border-radius:999px}
+.plan h3{font-size:22px}
+.pdesc{color:var(--muted);font-size:15px;margin-top:6px}
+.pfit{font:600 13px var(--f-mono);color:var(--orange);margin-top:16px}
+.plan ul{list-style:none;padding:18px 0 0;margin:18px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px;flex:1}
+.plan li{font-size:15px;padding-left:28px;position:relative}
+.plan li::before{content:"✓";position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font:700 11px var(--f-body);background:rgba(14,154,104,.14);color:var(--ok)}
+.plan .btn{justify-content:center;margin-top:22px}
+.pnote{color:var(--muted);font-size:14px;margin-top:20px}
+@media (max-width:900px){.plans{grid-template-columns:1fr;max-width:520px}}
+
+/* cta + footer */
+.cta{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:28px}
+.cta h2{font-size:clamp(32px,5vw,56px);line-height:1.04;max-width:16ch}
+.cta h2 em{font-style:normal;color:var(--orange)}
+.contact{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:18px;color:var(--muted);font-size:15px}
+.contact b{color:var(--fg);user-select:all}
+footer.foot{border-top:1px solid var(--line);background:var(--panel);padding-block:28px;color:var(--muted);font-size:13px}
+footer.foot .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+
+/* Sinhala sizing */
+:root[lang="si"] h1,:root[lang="si"] h2,:root[lang="si"] h3{letter-spacing:0;line-height:1.3}
+:root[lang="si"] .hero h1{font-size:clamp(30px,3.6vw,50px)}
+:root[lang="si"] .sec-head h2{font-size:clamp(26px,3vw,38px)}
+:root[lang="si"] .cta h2{font-size:clamp(28px,3.8vw,46px)}
+:root[lang="si"] .eyebrow{letter-spacing:.04em}
+:root[lang="si"] body{line-height:1.75}
+:root[lang="si"] .nav-links{gap:18px}
+:root[lang="si"] .nav-links a{font-size:14px}
+</style>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <div class="nav-inner">
+      <a class="logo" href="#top" aria-label="Pentarix POS home">
+        <svg width="34" height="30" viewBox="0 0 34 30" aria-hidden="true"><path d="M17 2 32 28H2Z" fill="#ff6b0f"/><path d="M17 12 24 24H10Z" fill="#ffffff"/></svg>
+        <span><small>PENTARIX</small><b>POS</b></span>
+      </a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#why" data-si="ඇයි POS">Why POS</a>
+        <a href="#flow" data-si="ක්‍රියා කරන හැටි">How it works</a>
+        <a href="#features" data-si="විශේෂාංග">Features</a>
+        <a href="#screens" data-si="තිර">Screens</a>
+        <a href="#plans" data-si="පැකේජ">Plans</a>
+      </nav>
+      <div class="nav-right">
+        <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="si" aria-pressed="false" lang="si">සිං</button></div>
+        <a class="btn btn-primary nav-cta" href="#plans" data-si="ඩෙමෝ එකක්">Book a demo</a>
+        <button class="menu-btn" id="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path id="menu-ic" d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+    <nav class="mobile-menu" id="mobile-menu" aria-label="Mobile sections" hidden>
+      <a href="#why" data-si="ඇයි POS">Why POS</a>
+      <a href="#flow" data-si="ක්‍රියා කරන හැටි">How it works</a>
+      <a href="#features" data-si="විශේෂාංග">Features</a>
+      <a href="#screens" data-si="තිර">Screens</a>
+      <a href="#plans" data-si="පැකේජ">Plans</a>
+      <a class="btn btn-primary" href="#plans" data-si="ඩෙමෝ එකක්">Book a demo</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-label="Pentarix POS">
+    <div id="city3d" aria-hidden="true"></div>
+    <div class="hero-scrim" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="eyebrow" data-si="විකුණුම් ස්ථාන පද්ධතිය">Point of Sale System</p>
+        <h1 data-si="බිල තත්පර කිහිපයකින්. <em>දවස අවසානයේ සල්ලි ගැලපෙනවා.</em>">Every bill in seconds. <em>Every rupee accounted for.</em></h1>
+        <p class="lede" data-si="Pentarix POS ඔබේ කවුන්ටරය, තොග, promotions, පාරිභෝගික ණය සහ ශාඛා වාර්තා එක තැනකින් පාලනය කරයි. සුපර් මාර්කට්, සිල්ලර කඩ සහ බහු ශාඛා ව්‍යාපාර සඳහා.">Pentarix POS runs your counters, stock, promotions, customer credit and branch reports from one system. Built for supermarkets, retail shops and multi-branch stores in Sri Lanka.</p>
+        <div class="ctas">
+          <a class="btn btn-primary" href="#plans" data-si="නොමිලේ ඩෙමෝ එකක් →">Book a free demo →</a>
+          <a class="btn btn-ghost" href="#screens" data-si="තිර බලන්න">See the screens</a>
+        </div>
+        <div class="facts"><span data-si="බාර්කෝඩ් සහ තරාදි බාර්කෝඩ්">Barcode &amp; scale barcode</span><span data-si="කොටස් ගෙවීම්">Split payments</span><span data-si="බහු කවුන්ටර් සහ ශාඛා">Multi-counter &amp; branch</span></div>
+      </div>
+      <div class="netcard" aria-label="Example network shown in the background">
+        <span class="live" data-si="සජීවී ජාල දසුන">Live network view</span>
+        <div class="net-stats">
+          <div><b>5</b><small data-si="ශාඛා">Branches</small></div>
+          <div><b>15</b><small data-si="කවුන්ටර්">Counters</small></div>
+          <div><b>3</b><small data-si="සැපයුම්කරුවන්">Suppliers</small></div>
+          <div><b id="n-bills">1,284</b><small data-si="අද බිල්">Bills today</small></div>
+        </div>
+        <div class="legend3d"><span style="--c:#ff6b0f" data-si="විකුණුම් දත්ත">Sales data</span><span style="--c:#22c38e" data-si="තොග සහ මිල යාවත්කාලීන">Stock &amp; price updates</span><span style="--c:#a78bfa" data-si="සැපයුම්කරුට ඇණවුම්">Purchase orders</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="promo" style="padding-block:20px 0">
+    <div class="wrap">
+      <div class="ad-wrap">
+        <div class="ad ad-si on play" lang="si">
+          <div class="ad-head">කවුන්ටරයේ හැම ප්‍රශ්නයකටම <em>එකම විසඳුමක්!</em></div>
+          <div class="ad-sub">Pentarix POS – ඔබේ කඩේ හැම බිලක්ම, හැම රුපියලක්ම පාලනය කරන <b>Smart POS</b> එක.</div>
+          <div class="ad-grid">
+            <div class="ad-col ad-colq">ප්‍රශ්නය</div><div></div><div class="ad-col ad-cola">POS විසඳුම</div>
+            <div class="ad-q" style="--i:0"><i>✕</i><span>කවුන්ටරයේ පෝලිම් දිගද?</span></div><div class="ad-arr" aria-hidden="true" style="--i:0">→</div><div class="ad-a" style="--i:0"><i>✓</i><span>බිල තත්පර කිහිපයකින්</span></div>
+            <div class="ad-q" style="--i:1"><i>✕</i><span>දවස අවසානයේ සල්ලි ගැලපෙන්නේ නැද්ද?</span></div><div class="ad-arr" aria-hidden="true" style="--i:1">→</div><div class="ad-a" style="--i:1"><i>✓</i><span>කවුන්ටර් මුදල් නිවැරදිව</span></div>
+            <div class="ad-q" style="--i:2"><i>✕</i><span>Stock ඉවර වුණා දැනගන්නේ පස්සෙද?</span></div><div class="ad-arr" aria-hidden="true" style="--i:2">→</div><div class="ad-a" style="--i:2"><i>✓</i><span>සජීවී තොග සහ කල් ඉකුත්වීම්</span></div>
+            <div class="ad-q" style="--i:3"><i>✕</i><span>ණයට දුන්නා මතක නැද්ද?</span></div><div class="ad-arr" aria-hidden="true" style="--i:3">→</div><div class="ad-a" style="--i:3"><i>✓</i><span>පාරිභෝගික ගිණුම් සහ ණය</span></div>
+            <div class="ad-q" style="--i:4"><i>✕</i><span>Discount දාන්න අමාරුද?</span></div><div class="ad-arr" aria-hidden="true" style="--i:4">→</div><div class="ad-a" style="--i:4"><i>✓</i><span>ස්වයංක්‍රීය promotions</span></div>
+          </div>
+          <div class="ad-close">Pentarix POS සමඟ ඔබේ කඩේ <em>අදම දියුණු කරගන්න!</em></div>
+          <div class="ad-foot">
+            <span>වෙබ්: <b>pentarixlabs.com</b></span>
+            <span class="ad-logo"><svg viewBox="0 0 34 30" aria-hidden="true"><path d="M17 2 32 28H2Z" fill="#ff6b0f"/><path d="M17 12 24 24H10Z" fill="#fff"/></svg><span><small>PENTARIX</small><strong>POS</strong><em>Point of Sale System</em></span></span>
+            <span>අමතන්න: <b>070 723 3731</b></span>
+          </div>
+        </div>
+        <div class="ad ad-en" lang="en">
+          <div class="ad-head">Now, <em>one answer</em> to every counter problem!</div>
+          <div class="ad-sub">Pentarix POS – the <b>smart POS</b> that keeps every bill and every rupee in your shop under control.</div>
+          <div class="ad-grid">
+            <div class="ad-col ad-colq">The problem</div><div></div><div class="ad-col ad-cola">The POS fix</div>
+            <div class="ad-q" style="--i:0"><i>✕</i><span>Long queues at the counter?</span></div><div class="ad-arr" aria-hidden="true" style="--i:0">→</div><div class="ad-a" style="--i:0"><i>✓</i><span>Bills in seconds</span></div>
+            <div class="ad-q" style="--i:1"><i>✕</i><span>Cash never matches at day end?</span></div><div class="ad-arr" aria-hidden="true" style="--i:1">→</div><div class="ad-a" style="--i:1"><i>✓</i><span>Every counter balanced</span></div>
+            <div class="ad-q" style="--i:2"><i>✕</i><span>Find out too late that stock ran out?</span></div><div class="ad-arr" aria-hidden="true" style="--i:2">→</div><div class="ad-a" style="--i:2"><i>✓</i><span>Live stock and expiry</span></div>
+            <div class="ad-q" style="--i:3"><i>✕</i><span>Lose track of credit you gave?</span></div><div class="ad-arr" aria-hidden="true" style="--i:3">→</div><div class="ad-a" style="--i:3"><i>✓</i><span>Customer accounts and credit</span></div>
+            <div class="ad-q" style="--i:4"><i>✕</i><span>Discounts are a headache?</span></div><div class="ad-arr" aria-hidden="true" style="--i:4">→</div><div class="ad-a" style="--i:4"><i>✓</i><span>Automatic promotions</span></div>
+          </div>
+          <div class="ad-close">Grow your shop with Pentarix POS, <em>starting today!</em></div>
+          <div class="ad-foot">
+            <span>Visit: <b>pentarixlabs.com</b></span>
+            <span class="ad-logo"><svg viewBox="0 0 34 30" aria-hidden="true"><path d="M17 2 32 28H2Z" fill="#ff6b0f"/><path d="M17 12 24 24H10Z" fill="#fff"/></svg><span><small>PENTARIX</small><strong>POS</strong><em>Point of Sale System</em></span></span>
+            <span>Call: <b>070 723 3731</b></span>
+          </div>
+        </div>
+      </div>
+      <div class="ad-dots" role="group" aria-label="Ad language"><button type="button" data-ad="si" aria-pressed="true" lang="si">සිංහල</button><button type="button" data-ad="en" aria-pressed="false">English</button></div>
+    </div>
+  </section>
+
+  <section id="why">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 data-si="අතින් ලියන බිල් පොත සහ සාමාන්‍ය cash register ව්‍යාපාරය වැඩෙනකොට නවතිනවා">A bill book and a cash drawer stop working once the shop gets busy</h2>
+        <p data-si="කඩ හිමියන් අපට වැඩිපුරම කියන ගැටලු මේවායි, සහ Pentarix POS සමඟ වෙනස් වන දේ.">These are the problems shop owners tell us about most, and what changes with Pentarix POS.</p>
+      </div>
+      <div class="why-head" aria-hidden="true"><span data-si="POS නැතුව">Without POS</span><span data-si="Pentarix POS එක්ක">With Pentarix POS</span></div>
+      <div class="pair"><p class="before" data-si="හැම භාණ්ඩයකම මිල මතක තියාගෙන අතින් ගණන් හදනවා.">Cashiers remember prices and add up bills by hand.</p><p class="after" data-si="බාර්කෝඩ් එක ස්කෑන් කළාම මිල, promotion සහ මුළු එකතුව ස්වයංක්‍රීයව.">Scan the barcode and the price, promotion and total are filled in.</p></div>
+      <div class="pair"><p class="before" data-si="දවස අවසානයේ ලාච්චුවේ සල්ලි ගැලපෙන්නේ නෑ, ඇයි කියලා කවුරුත් දන්නේ නෑ.">The drawer never matches at closing and nobody knows why.</p><p class="after" data-si="හැම කවුන්ටර් සැසියකටම ආරම්භක මුදල, ආපසු ගැනීම්, වියදම් සහ වෙනස සටහන් වෙනවා.">Each counter session records the opening float, withdrawals, expenses and the variance.</p></div>
+      <div class="pair"><p class="before" data-si="භාණ්ඩ ඉවර වුණා හෝ කල් ඉකුත් වුණා දැනගන්නේ පාරිභෝගිකයා ඉල්ලුවාමයි.">You find out an item ran out or expired when a customer asks for it.</p><p class="after" data-si="බැච්, කල් ඉකුත් දින සහ අඩු තොග එක තිරයකින් බලන්න පුළුවන්.">Batches, expiry dates and low stock show on one screen.</p></div>
+      <div class="pair"><p class="before" data-si="ණය පොතේ ලියපු ගණන් නැති වෙනවා.">Credit written in a notebook goes missing.</p><p class="after" data-si="හැම පාරිභෝගිකයෙකුගේම ණය ශේෂය, ගෙවීම් සහ ලෝයල්ටි පොයින්ට් සටහන් වෙනවා.">Every customer has a credit balance, payment history and loyalty points.</p></div>
+      <div class="pair"><p class="before" data-si="රිටර්න් එකකට කීයක් ආපසු දෙන්නද කියලා තීරණය කරන්නේ අනුමානයෙන්.">Refunds on returns are guessed, often at the full price.</p><p class="after" data-si="රිටර්න් ඉන්වොයිසියට එරෙහිව, ගෙවූ මුදල අනුව ගණනය කර, තොගයට එකතු වෙනවා.">Returns are checked against the invoice, refunded at what was paid, and put back into stock.</p></div>
+      <div class="pair"><p class="before" data-si="ශාඛා කිහිපයක විකුණුම් බලන්න හැම තැනටම කෝල් කරන්න ඕනේ.">To see sales across branches you phone each one.</p><p class="after" data-si="සියලු ශාඛාවල අද විකුණුම්, ලාභ සහ අනතුරු ඇඟවීම් එක ඩෑෂ්බෝඩ් එකක.">Today's sales, top products and alerts for every branch are on one dashboard.</p></div>
+    </div>
+  </section>
+
+  <section id="flow" class="band">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 data-si="සැපයුම්කරුගේ ලොරියේ සිට ප්‍රධාන කාර්යාලය දක්වා">From the supplier's lorry to head office</h2>
+        <p data-si="තොග එන හැටි, කවුන්ටර් ගණනාවක විකිණෙන හැටි, සහ සියලු ශාඛා එකට සම්බන්ධ වෙන හැටි බලන්න.">See stock arrive, sell across several counters, and every branch stay connected.</p>
+      </div>
+      <div class="story">
+        <div class="stage-wrap">
+        <svg id="story" viewBox="0 30 1200 410" role="img" aria-label="Animation: a supplier lorry delivers stock to the store, staff fill the shelves, customers shop and pay at three counters with promotions applied, then sales sync to head office with the other branches and a low-stock purchase order goes back to the supplier">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#101a30"/><stop offset="1" stop-color="#16233d"/></linearGradient>
+            <g id="box"><rect x="-11" y="-11" width="22" height="22" rx="3" fill="#c98b4f"/><path d="M-11 -3H11M0 -11V-3" stroke="#8d5a2b" stroke-width="2"/></g>
+          </defs>
+          <rect x="0" y="30" width="1200" height="410" fill="url(#sky)"/>
+          <g font-family="Figtree,sans-serif">
+            <!-- suppliers -->
+            <polygon points="28,205 120,165 212,205" fill="#2a3858"/>
+            <rect x="38" y="203" width="164" height="155" fill="#1d2a45" stroke="#2f3e60" stroke-width="2"/>
+            <rect id="supglow" x="38" y="203" width="164" height="155" fill="#a78bfa" opacity="0"/>
+            <text x="120" y="228" text-anchor="middle" font-weight="800" font-size="13" fill="#ffb23e" letter-spacing="2">SUPPLIERS</text>
+            <g font-weight="800" font-size="10" text-anchor="middle">
+              <rect x="52" y="238" width="40" height="18" rx="3" fill="#22c38e"/><text x="72" y="251" fill="#06281c">DAIRY</text>
+              <rect x="100" y="238" width="40" height="18" rx="3" fill="#ffb23e"/><text x="120" y="251" fill="#2a1600">RICE</text>
+              <rect x="148" y="238" width="40" height="18" rx="3" fill="#5aa8ff"/><text x="168" y="251" fill="#071a33">FMCG</text>
+            </g>
+            <rect x="78" y="272" width="84" height="86" fill="#0c1528"/>
+            <use href="#box" x="98" y="346"/><use href="#box" x="122" y="346"/><use href="#box" x="146" y="346"/><use href="#box" x="110" y="322"/><use href="#box" x="134" y="322"/>
+
+            <!-- store -->
+            <rect x="280" y="140" width="630" height="14" rx="3" fill="#ff6b0f"/>
+            <rect x="290" y="152" width="610" height="206" fill="#1d2a45" stroke="#2f3e60" stroke-width="2"/>
+            <rect x="465" y="104" width="260" height="36" rx="6" fill="#ff6b0f"/>
+            <text x="595" y="128" text-anchor="middle" font-family="'Bricolage Grotesque',Figtree,sans-serif" font-weight="800" font-size="16" fill="#160800" letter-spacing="1">PENTARIX MART · KANDY</text>
+            <rect x="292" y="154" width="108" height="202" fill="#17223a"/>
+            <rect x="398" y="154" width="4" height="128" fill="#2f3e60"/>
+            <text x="346" y="226" text-anchor="middle" font-weight="700" font-size="10" fill="#8e9ab2" letter-spacing="1.5">STORE ROOM</text>
+            <rect x="302" y="164" width="88" height="44" rx="8" fill="#0b1426" stroke="#22c38e" stroke-width="1.5"/>
+            <text x="346" y="180" text-anchor="middle" font-weight="700" font-size="9.5" fill="#8e9ab2" letter-spacing="1">STOCK</text>
+            <text id="stockn" x="346" y="200" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-weight="700" font-size="16" fill="#4fe0ad">48</text>
+            <g id="stack"></g>
+            <g fill="#3a4a6e"><rect x="420" y="186" width="6" height="172"/><rect x="574" y="186" width="6" height="172"/><rect x="420" y="222" width="160" height="5"/><rect x="420" y="272" width="160" height="5"/><rect x="420" y="322" width="160" height="5"/></g>
+            <g id="shelf"></g>
+            <g id="counters"></g>
+            <rect x="894" y="288" width="8" height="70" fill="#4a5f8a"/>
+
+            <!-- other branches -->
+            <g transform="translate(985,40)"><rect width="64" height="44" fill="#1d2a45" stroke="#2f3e60" stroke-width="1.5"/><rect id="br2hl" width="64" height="44" fill="#22c38e" opacity="0"/><rect y="-6" width="64" height="8" fill="#22c38e"/><rect x="24" y="22" width="16" height="22" fill="#0c1528"/><text x="32" y="60" text-anchor="middle" font-size="10" fill="#c7d0e4" font-weight="700" letter-spacing="1">GALLE</text></g>
+            <g transform="translate(1100,40)"><rect width="64" height="44" fill="#1d2a45" stroke="#2f3e60" stroke-width="1.5"/><rect id="br3hl" width="64" height="44" fill="#8b7bff" opacity="0"/><rect y="-6" width="64" height="8" fill="#8b7bff"/><rect x="24" y="22" width="16" height="22" fill="#0c1528"/><text x="32" y="60" text-anchor="middle" font-size="10" fill="#c7d0e4" font-weight="700" letter-spacing="1">NEGOMBO</text></g>
+
+            <!-- head office -->
+            <rect x="1000" y="140" width="150" height="28" rx="5" fill="#5aa8ff"/>
+            <text x="1075" y="159" text-anchor="middle" font-weight="800" font-size="12" fill="#071a33" letter-spacing="1.5">HEAD OFFICE</text>
+            <rect x="975" y="168" width="200" height="190" fill="#1d2a45" stroke="#2f3e60" stroke-width="2"/>
+            <rect x="992" y="186" width="166" height="104" rx="4" fill="#0b1426" stroke="#5a77a8" stroke-width="2"/>
+            <text x="1002" y="204" font-size="9.5" fill="#8e9ab2" font-weight="700" letter-spacing="1">ALL BRANCHES · TODAY</text>
+            <text id="hqnum" x="1150" y="224" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="14" fill="#e8ecf4" font-weight="700">LKR 2,410,600</text>
+            <g id="hqbars"></g>
+            <rect x="1030" y="300" width="90" height="8" rx="2" fill="#3a4c74"/><rect x="1036" y="308" width="6" height="50" fill="#3a4c74"/><rect x="1108" y="308" width="6" height="50" fill="#3a4c74"/>
+          </g>
+
+          <!-- road -->
+          <rect x="0" y="358" width="1200" height="8" fill="#26324c"/>
+          <rect x="0" y="366" width="1200" height="74" fill="#1a2336"/>
+          <path d="M0 404H1200" stroke="#56627d" stroke-width="3" stroke-dasharray="22 18"/>
+
+          <g id="dyn" font-family="Figtree,sans-serif">
+            <g id="people"></g>
+            <path id="tr0" d="" stroke="#ff6b0f" stroke-width="2.5" stroke-dasharray="6 8" fill="none" opacity="0"/>
+            <path id="tr1" d="" stroke="#22c38e" stroke-width="2.5" stroke-dasharray="6 8" fill="none" opacity="0"/>
+            <path id="tr2" d="" stroke="#8b7bff" stroke-width="2.5" stroke-dasharray="6 8" fill="none" opacity="0"/>
+            <path id="trpo" d="" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="6 8" fill="none" opacity="0"/>
+            <g id="lorry" transform="translate(30,392)">
+              <rect x="0" y="-86" width="128" height="70" rx="4" fill="#e8ecf4"/>
+              <text x="64" y="-46" text-anchor="middle" font-family="'Bricolage Grotesque',Figtree,sans-serif" font-weight="800" font-size="20" fill="#ff6b0f">PENTARIX</text>
+              <text x="64" y="-28" text-anchor="middle" font-weight="700" font-size="10" fill="#56627d" letter-spacing="2">DELIVERY</text>
+              <path d="M128 -64h26l18 22v26h-44z" fill="#ff6b0f"/>
+              <path d="M134 -58h18l12 16h-30z" fill="#9fd0ff"/>
+              <rect x="0" y="-18" width="172" height="6" fill="#3a4a6e"/>
+              <g class="wheel" data-cx="30"><circle cx="30" cy="-8" r="13" fill="#0b0f18"/><circle cx="30" cy="-8" r="5" fill="#8e9ab2"/><path d="M30 -16v16M22 -8h16" stroke="#56627d" stroke-width="2"/></g>
+              <g class="wheel" data-cx="142"><circle cx="142" cy="-8" r="13" fill="#0b0f18"/><circle cx="142" cy="-8" r="5" fill="#8e9ab2"/><path d="M142 -16v16M134 -8h16" stroke="#56627d" stroke-width="2"/></g>
+              <g id="lorrycount" opacity="0"><circle cx="118" cy="-86" r="13" fill="#22c38e"/><text id="lorrycountt" x="118" y="-81" text-anchor="middle" font-weight="800" font-size="14" fill="#06281c">0</text></g>
+            </g>
+            <use id="f0" href="#box" opacity="0"/><use id="f1" href="#box" opacity="0"/><use id="f2" href="#box" opacity="0"/>
+            <g id="badges"></g>
+          </g>
+        </svg>
+        </div>
+        <ol class="steps" id="steps">
+          <li tabindex="0" data-s="0"><i></i><b data-si="සැපයුම්කරුවන් තොග ගෙනෙනවා">Suppliers deliver stock</b><span data-si="ලොරිය බඩු ගෙනෙනවා, GRN එකෙන් තොගය එකතු වෙනවා.">The lorry brings the order and a GRN adds it to stock.</span></li>
+          <li tabindex="0" data-s="1"><i></i><b data-si="රාක්කවලට තොග">Stock goes on the shelf</b><span data-si="කාර්ය මණ්ඩලය රාක්ක පුරවනවා, බැච් සහ කල් ඉකුත් දින සමඟ.">Staff fill the shelves, with batch and expiry tracked.</span></li>
+          <li tabindex="0" data-s="2"><i></i><b data-si="කවුන්ටර් ගණනාවක">Customers shop, many counters</b><span data-si="පාරිභෝගිකයන් බඩු තෝරා ඕනෑම කවුන්ටරයකට යනවා.">Customers pick their items and go to any open counter.</span></li>
+          <li tabindex="0" data-s="3"><i></i><b data-si="Promotion සහ ගෙවීම">Promotions and payment</b><span data-si="Promotions ස්වයංක්‍රීයව, කාඩ්, මුදල් හෝ ණය, බිල මුද්‍රණය වෙනවා.">Promotions apply, customers pay by card, cash or credit, and the receipt prints.</span></li>
+          <li tabindex="0" data-s="4"><i></i><b data-si="සියලු ශාඛා එකට">Every branch syncs</b><span data-si="විකුණුම් ප්‍රධාන කාර්යාලයට, අඩු තොගයට ඇණවුම සැපයුම්කරුට.">Sales reach head office, and low stock sends a purchase order to the supplier.</span></li>
+        </ol>
+      </div>
+      <div hidden>
+          <div class="scene on" data-scene="0">
+            <div class="card-d">
+              <h4>Item found <small class="mono">4792081002135</small></h4>
+              <div class="barcode" id="bc" aria-hidden="true"></div>
+              <div class="row"><span>Samba rice · scale label</span><span class="chip org">Weighed</span></div>
+              <div class="row"><span class="k">Weight from label</span><span class="mono">2.350 kg</span></div>
+              <div class="row"><span class="k">Price / kg</span><span class="mono">240.00</span></div>
+              <div class="row"><span class="k">Batch</span><span class="mono">RC-0921 · exp 2027-03</span></div>
+              <div class="row"><b>Line total</b><b class="mono">564.00</b></div>
+            </div>
+          </div>
+          <div class="scene" data-scene="1">
+            <div class="card-d">
+              <h4>Promotions on this bill <small>3 checked</small></h4>
+              <div class="row"><span>Laundry soap · Buy 2 get 1</span><span class="mono" style="color:var(--d-ok)">−95.00</span></div>
+              <div class="row"><span>Biscuit week · 10% item</span><span class="chip warn">Not in cart</span></div>
+              <div class="row"><span>Code <b class="mono">AVURUDU5</b> · 5% bill</span><span class="chip warn">Min LKR 3,000</span></div>
+              <div class="row"><b>Saved for the customer</b><b class="mono" style="color:var(--d-ok)">95.00</b></div>
+            </div>
+          </div>
+          <div class="scene" data-scene="2">
+            <div class="card-d">
+              <h4>Payment <small>Total LKR 2,464.00</small></h4>
+              <div class="row"><span>Cash</span><span class="mono">2,000.00</span></div>
+              <div class="row"><span>Card · Visa •• 4412</span><span class="mono">464.00</span></div>
+              <div class="row"><span class="k">Balance due</span><span class="mono">0.00</span></div>
+              <div class="row"><span class="k">Loyalty earned · Kasun P.</span><span class="mono">+24 pts</span></div>
+              <div class="row"><span class="chip">Paid</span><span class="k">Change 0.00</span></div>
+            </div>
+          </div>
+          <div class="scene" data-scene="3">
+            <div class="receipt" aria-label="Example printed receipt">
+              <div class="c"><b>PENTARIX MART · KANDY</b><br>No. 18, Peradeniya Rd</div><hr>
+              <div class="r"><span>INV-K02-04187</span><span>14:32</span></div><hr>
+              <div class="r"><span>Milk powder 400g</span><span>1,190.00</span></div>
+              <div class="r"><span>Laundry soap x3</span><span>285.00</span></div>
+              <div class="r"><span>&nbsp; Buy 2 get 1</span><span>-95.00</span></div>
+              <div class="r"><span>Samba rice 2.350kg</span><span>564.00</span></div>
+              <div class="r"><span>Cream crackers x2</span><span>520.00</span></div><hr>
+              <div class="r"><b>TOTAL</b><b>2,464.00</b></div>
+              <div class="r"><span>Cash</span><span>2,000.00</span></div>
+              <div class="r"><span>Card</span><span>464.00</span></div><hr>
+              <div class="c">You saved 95.00 · 24 points<br>Thank you, come again!</div>
+            </div>
+          </div>
+          <div class="scene" data-scene="4">
+            <div class="card-d">
+              <h4>Close session · Counter 02 <small>18:05</small></h4>
+              <div class="row"><span class="k">Opening float</span><span class="mono">10,000.00</span></div>
+              <div class="row"><span class="k">Cash sales</span><span class="mono">108,940.00</span></div>
+              <div class="row"><span class="k">Withdrawals · expenses</span><span class="mono">−7,630.00</span></div>
+              <div class="row"><span>Expected in drawer</span><span class="mono">111,310.00</span></div>
+              <div class="row"><span>Counted (notes + coins)</span><span class="mono">111,060.00</span></div>
+              <div class="row"><b>Variance</b><span class="chip warn">−250.00 flagged</span></div>
+            </div>
+          </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 data-si="Pentarix POS ඇතුළේ තියෙන හැම දෙයක්ම">Everything inside Pentarix POS</h2>
+        <p data-si="කවුන්ටරයේ සිට ප්‍රධාන කාර්යාලය දක්වා, එකම පද්ධතියක මොඩියුල 12ක්.">Twelve modules in one system, from the counter to head office.</p>
+      </div>
+      <div class="groups">
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4"/></svg></div><h3 data-si="කවුන්ටර් විකිණීම">Checkout</h3></div>
+          <ul><li><b>Barcode, SKU and name search</b> with a touch-friendly cashier screen</li><li><b>Scale barcodes</b> read weight or price from the label</li><li>Sell by <b>pack or piece</b> with unit conversions and variants</li><li>Sales history, invoice search and order cancellation</li><li>Part-paid bills with the balance carried on the order</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h15v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></div><h3 data-si="ගෙවීම්">Payments</h3></div>
+          <ul><li><b>Split one bill</b> across several payment methods</li><li>Cash, card, bank transfer and cheque</li><li><b>Credit sales</b> to a customer account</li><li>Pay with a <b>return voucher</b></li><li>Payment-method mix reported per branch and counter</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></div><h3 data-si="විකුණුම් රිටර්න්">Sales returns</h3></div>
+          <ul><li>Return against the <b>original invoice</b>, line by line</li><li>Refund at the <b>net price paid</b>, after promotions</li><li>Blocks returning more than was sold</li><li>Unpaid amounts are reduced first; credit goes back to the account</li><li>Restock as <b>good or damaged</b>, in the right unit</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></div><h3 data-si="Promotions">Promotions</h3></div>
+          <ul><li><b>Item</b> percentage or fixed discounts</li><li><b>Bill</b> percentage or fixed discounts</li><li><b>Buy X get Y</b> rules</li><li>Promotions on <b>specific batches</b>, such as near-expiry stock</li><li><b>Promo codes</b> at the counter, with start and end dates</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M19 8v6M16 11h6"/></svg></div><h3 data-si="පාරිභෝගිකයන්">Customers &amp; loyalty</h3></div>
+          <ul><li>Customer accounts with <b>credit balance</b> and limits</li><li>Record payments against what is owed</li><li><b>Loyalty points</b>: set points per rupee, earn and redeem</li><li>Full balance and loyalty history per customer</li><li>Customer engagement report per branch</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg></div><h3 data-si="මුදල් සහ කවුන්ටර්">Cash &amp; counters</h3></div>
+          <ul><li>Set up <b>counters</b> per branch</li><li>Open a session with an <b>opening float</b> and note count</li><li>Record <b>withdrawals and expenses</b> during the day</li><li>Close with a <b>denomination count</b> and variance</li><li><b>Variance alerts</b> and counter performance reports</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7Z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg></div><h3 data-si="තොග">Inventory</h3></div>
+          <ul><li>Stock per branch with <b>batches and expiry dates</b></li><li>Stock adjustments and <b>stock counts</b></li><li><b>Transfers</b> between branches</li><li>Full movement history for every item</li><li><b>Slow-moving</b> products and inventory health</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="6" width="14" height="11" rx="1"/><path d="M15 10h4l3 3v4h-7"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg></div><h3 data-si="මිලදී ගැනීම්">Purchasing &amp; suppliers</h3></div>
+          <ul><li>Suppliers with their item lists and prices</li><li><b>Purchase orders</b> and goods received (GRN)</li><li>Supplier <b>payments and ledger</b>, with unpaid supplies</li><li><b>Purchase returns</b> and supplier refunds</li><li>Spend, receiving and payment-exposure reports</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg></div><h3 data-si="භාණ්ඩ නාමාවලිය">Product catalogue</h3></div>
+          <ul><li>Items with categories, sub-categories and brands</li><li><b>Units</b>, pack sizes and variants</li><li><b>Tax rates</b> per item</li><li><b>Bulk import</b> of the catalogue</li><li>Price history and an <b>audit log</b> of every change</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div><h3 data-si="වාර්තා">Reports &amp; dashboards</h3></div>
+          <ul><li>Branch dashboard: <b>today, this month</b> and trends</li><li>Top and slow-selling products, top promotions</li><li>Returns, purchases and supplies analytics</li><li>Items that need attention and notifications</li><li><b>Head-office view</b> comparing all branches</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 21h18M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg></div><h3 data-si="බහු ශාඛා">Multi-branch</h3></div>
+          <ul><li>Run several branches from one account</li><li>Each branch keeps its own stock, counters and settings</li><li>Branch status and performance side by side</li><li>Per-branch loyalty and scale-barcode settings</li></ul></div>
+        <div class="grp"><div class="grp-h"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><h3 data-si="පරිශීලකයන් සහ ආරක්ෂාව">Users &amp; security</h3></div>
+          <ul><li><b>Roles and permissions</b>, from owner to cashier</li><li>A separate <b>cashier login</b> for the counter</li><li>Manager authorisation for sensitive actions</li><li>Audit log of who changed what, and when</li></ul></div>
+      </div>
+      <div class="paystrip"><strong data-si="භාරගන්නා ගෙවීම්:">Accepted at the counter:</strong><span>Cash</span><span>Card</span><span>Bank transfer</span><span>Cheque</span><span>Customer credit</span><span>Return voucher</span><span>Loyalty points</span></div>
+    </div>
+  </section>
+
+  <section id="screens" class="band">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 data-si="පද්ධතිය ඇතුළත">Inside the product</h2>
+        <p data-si="උදාහරණ දත්ත සහිත තිර.">Screens shown with example data.</p>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Product screens">
+        <button class="tab" role="tab" id="tab-till" aria-selected="true" aria-controls="p-till" data-k="till">Counter screen</button>
+        <button class="tab" role="tab" id="tab-dash" aria-selected="false" aria-controls="p-dash" data-k="dash">Branch dashboard</button>
+        <button class="tab" role="tab" id="tab-cash" aria-selected="false" aria-controls="p-cash" data-k="cash">Cash session</button>
+        <button class="tab" role="tab" id="tab-promo" aria-selected="false" aria-controls="p-promo" data-k="promo">Promotions</button>
+        <button class="tab" role="tab" id="tab-stock" aria-selected="false" aria-controls="p-stock" data-k="stock">Stock &amp; batches</button>
+      </div>
+      <div class="frame">
+        <div class="bar"><i></i><i></i><i></i><span id="url">Pentarix POS / Kandy branch / Counter 02 / Checkout</span></div>
+        <div class="pane" role="tabpanel" id="p-till" aria-labelledby="tab-till">
+          <div class="till" aria-label="Example checkout on the Pentarix POS counter screen">
+            <div class="till-bar"><span><b>Counter 02</b> · Kandy branch · Cashier: Nimali</span><span class="live">Session open</span></div>
+            <div class="scan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6v12M8 6v12M11 6v12M15 6v12M18 6v12M21 6v12"/></svg><span>Scan or type name / SKU</span><span class="code mono" id="scancode" style="margin-left:auto"></span><div class="beam" id="beam"></div></div>
+            <ul class="lines" id="lines"></ul>
+            <div class="tot"><span>Subtotal</span><span class="mono" id="sub">0.00</span><span>Promotions</span><span class="mono" id="disc" style="color:var(--d-ok)">0.00</span><span class="big">Total LKR</span><span class="big mono" id="total">0.00</span></div>
+            <div class="pays" id="pays"><span>Cash</span><span>Card</span><span>Bank transfer</span><span>Cheque</span><span>Credit</span><span>Return voucher</span></div>
+            <div class="paid off" id="paid"><span>Paid: Cash 2,000.00 + Card 464.00</span><span class="mono">INV-K02-04187</span></div>
+          </div>
+        </div>
+        <div class="pane" role="tabpanel" id="p-dash" aria-labelledby="tab-dash" hidden>
+          <div class="kpis">
+            <div class="kpi"><small>Today's sales</small><b>186,420</b><em>▲ 12% vs last Saturday</em></div>
+            <div class="kpi"><small>Bills</small><b>214</b><em>4 counters open</em></div>
+            <div class="kpi"><small>Average bill</small><b>871.12</b><em>▲ 38.40</em></div>
+            <div class="kpi"><small>Returns</small><b>3</b><em style="color:#ffb23e">LKR 1,240 refunded</em></div>
+          </div>
+          <div class="two">
+            <div class="box"><h5>Sales, last 7 days (LKR '000)</h5>
+              <div class="bars"><div style="height:58%"></div><div style="height:64%"></div><div style="height:52%"></div><div style="height:70%"></div><div style="height:76%"></div><div style="height:88%"></div><div class="last" style="height:93%"></div></div>
+              <div class="blabels"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Today</span></div>
+            </div>
+            <div class="box"><h5>Payment methods today</h5>
+              <div class="mix"><div style="width:58%;background:#ff6b0f"></div><div style="width:27%;background:#5aa8ff"></div><div style="width:11%;background:#22c38e"></div><div style="width:4%;background:#a78bfa"></div></div>
+              <div class="legend"><div><span style="--c:#ff6b0f">Cash</span><span class="mono">58%</span></div><div><span style="--c:#5aa8ff">Card</span><span class="mono">27%</span></div><div><span style="--c:#22c38e">Credit</span><span class="mono">11%</span></div><div><span style="--c:#a78bfa">Bank / cheque / voucher</span><span class="mono">4%</span></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="pane" role="tabpanel" id="p-cash" aria-labelledby="tab-cash" hidden>
+          <div class="two">
+            <div class="box"><h5>Denomination count · Counter 02</h5>
+              <div class="tscroll"><table class="t"><thead><tr><th>Note / coin</th><th class="n">Qty</th><th class="n">Total</th></tr></thead><tbody>
+                <tr><td>5,000</td><td class="n">12</td><td class="n">60,000.00</td></tr>
+                <tr><td>1,000</td><td class="n">35</td><td class="n">35,000.00</td></tr>
+                <tr><td>500</td><td class="n">20</td><td class="n">10,000.00</td></tr>
+                <tr><td>100</td><td class="n">48</td><td class="n">4,800.00</td></tr>
+                <tr><td>Coins</td><td class="n">—</td><td class="n">1,260.00</td></tr>
+                <tr><td><b>Counted</b></td><td></td><td class="n"><b>111,060.00</b></td></tr>
+              </tbody></table></div>
+            </div>
+            <div class="box"><h5>Session summary</h5>
+              <div class="row"><span class="k">Opened</span><span class="mono">08:30 · Nimali</span></div>
+              <div class="row"><span class="k">Opening float</span><span class="mono">10,000.00</span></div>
+              <div class="row"><span class="k">Cash sales</span><span class="mono">108,940.00</span></div>
+              <div class="row"><span class="k">Withdrawal to safe</span><span class="mono">−6,000.00</span></div>
+              <div class="row"><span class="k">Expense · delivery</span><span class="mono">−1,630.00</span></div>
+              <div class="row"><span>Expected</span><span class="mono">111,310.00</span></div>
+              <div class="row"><b>Variance</b><span class="chip warn">−250.00</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="pane" role="tabpanel" id="p-promo" aria-labelledby="tab-promo" hidden>
+          <div class="box"><h5>Promotions · Kandy branch</h5>
+            <div class="tscroll"><table class="t" style="min-width:620px"><thead><tr><th>Promotion</th><th>Type</th><th>Runs</th><th class="n">Used</th><th>Status</th></tr></thead><tbody>
+              <tr><td>Laundry soap 3 for 2</td><td>Buy X get Y</td><td>01 – 30 Nov</td><td class="n">142</td><td><span class="chip">Active</span></td></tr>
+              <tr><td>Biscuit week</td><td>Item 10%</td><td>08 – 14 Nov</td><td class="n">96</td><td><span class="chip">Active</span></td></tr>
+              <tr><td>Yoghurt near expiry</td><td>Batch · LKR 20 off</td><td>Until sold</td><td class="n">31</td><td><span class="chip">Active</span></td></tr>
+              <tr><td>AVURUDU5</td><td>Code · bill 5%</td><td>10 – 16 Apr</td><td class="n">418</td><td><span class="chip warn">Ended</span></td></tr>
+              <tr><td>Weekend LKR 250 off over 5,000</td><td>Bill fixed</td><td>Sat – Sun</td><td class="n">57</td><td><span class="chip org">Paused</span></td></tr>
+            </tbody></table></div>
+          </div>
+        </div>
+        <div class="pane" role="tabpanel" id="p-stock" aria-labelledby="tab-stock" hidden>
+          <div class="box"><h5>Batches expiring in 30 days</h5>
+            <div class="tscroll"><table class="t" style="min-width:620px"><thead><tr><th>Item</th><th>Batch</th><th>Expires</th><th class="n">On hand</th><th>Action</th></tr></thead><tbody>
+              <tr><td>Set yoghurt 80g</td><td class="mono">YG-1107</td><td class="mono">2026-11-14</td><td class="n">64</td><td><span class="chip org">Batch promo on</span></td></tr>
+              <tr><td>Fresh milk 1L</td><td class="mono">FM-1102</td><td class="mono">2026-11-16</td><td class="n">22</td><td><span class="chip warn">Move to front</span></td></tr>
+              <tr><td>Bread loaf 450g</td><td class="mono">BR-1108</td><td class="mono">2026-11-10</td><td class="n">9</td><td><span class="chip warn">Return to supplier</span></td></tr>
+              <tr><td>Cheese slices 200g</td><td class="mono">CS-0930</td><td class="mono">2026-12-02</td><td class="n">18</td><td><span class="chip">OK</span></td></tr>
+            </tbody></table></div>
+          </div>
+        </div>
+      </div>
+      <div class="caption">
+        <h3 id="ctitle">A bill in a few seconds</h3>
+        <p id="ctext">Scan items, let promotions apply, and split the payment across cash and card. The invoice number is issued the moment it is paid.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="sec-head"><h2 data-si="ශ්‍රී ලංකාවේ කඩ සඳහාම හදපු">Made for shops in Sri Lanka</h2></div>
+      <div class="local">
+        <div><b data-si="රුපියල් සහ නෝට්ටු">Rupees and our notes</b><p data-si="LKR මිල, සහ රු. 5,000 සිට කාසි දක්වා සැසි ගණන් කිරීම.">Prices in LKR, and session counts from Rs. 5,000 notes down to coins.</p></div>
+        <div><b data-si="තරාදි බාර්කෝඩ්">Weighed goods</b><p data-si="සහල්, පරිප්පු, එළවළු වැනි කිරා විකුණන භාණ්ඩ තරාදි ලේබලයෙන්.">Rice, dhal and vegetables sold by weight straight from the scale label.</p></div>
+        <div><b data-si="ණය පොත වෙනුවට">Replaces the credit book</b><p data-si="හැඳින්න පාරිභෝගිකයන්ට ණයට දෙන්න, ගෙවූ විට ශේෂය අඩු වෙනවා.">Give regular customers credit and see the balance drop as they pay.</p></div>
+        <div><b data-si="සිංහල සහ ඉංග්‍රීසි">Sinhala and English</b><p data-si="ඔබේ කාර්ය මණ්ඩලයට සහාය සහ පුහුණුව දෙභාෂාවෙන්ම.">Training and support for your staff in both languages.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="plans" class="band">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 data-si="ඔබේ කඩේට ගැලපෙන පැකේජය">A plan for the size of your shop</h2>
+        <p data-si="සෑම පැකේජයකටම ස්ථාපනය, පුහුණුව සහ දෙභාෂා සහාය ඇතුළත්. මිල ගණන් සඳහා අප අමතන්න.">Every plan includes setup, staff training and support in Sinhala and English. Call us for pricing.</p>
+      </div>
+      <div class="plans">
+        <article class="plan">
+          <h3 data-si="තනි කඩ">Single shop</h3>
+          <p class="pdesc" data-si="එක කවුන්ටරයක් සහිත සිල්ලර කඩ, ෆාමසි සහ කුඩා සුපර් මාර්කට්.">For a corner shop, pharmacy or small grocery with one counter.</p>
+          <p class="pfit">1 branch · 1 counter</p>
+          <ul><li>Checkout, scale barcode and returns</li><li>Split payments and customer credit</li><li>Stock, batches and expiry</li><li>Promotions and loyalty points</li><li>Daily sales reports</li></ul>
+          <a class="btn btn-ghost" href="#contact" data-si="මිල ගණන් ඉල්ලන්න">Ask for a quote</a>
+        </article>
+        <article class="plan pop">
+          <span class="tag" data-si="වැඩිපුරම තෝරන">Most popular</span>
+          <h3 data-si="සුපර් මාර්කට්">Supermarket</h3>
+          <p class="pdesc" data-si="කවුන්ටර් කිහිපයක් සහ සැපයුම්කරුවන් රැසක් ඇති කඩ.">For busy stores with several counters and many suppliers.</p>
+          <p class="pfit">1 branch · multiple counters</p>
+          <ul><li>Everything in Single shop</li><li>Counter sessions, cash counts and variance alerts</li><li>Purchase orders, GRN and supplier payments</li><li>Purchase returns and stock counts</li><li>Full branch dashboard and analytics</li></ul>
+          <a class="btn btn-primary" href="#contact" data-si="ඩෙමෝ එකක් වෙන්කරන්න">Book a demo</a>
+        </article>
+        <article class="plan">
+          <h3 data-si="බහු ශාඛා">Multi-branch</h3>
+          <p class="pdesc" data-si="ශාඛා කිහිපයක් සහ ප්‍රධාන කාර්යාලයක් ඇති ව්‍යාපාර.">For chains with several branches and a head office.</p>
+          <p class="pfit">Many branches · many counters</p>
+          <ul><li>Everything in Supermarket</li><li>Stock transfers between branches</li><li>Head-office dashboard for all branches</li><li>Branch-level roles and permissions</li><li>Priority support and on-site training</li></ul>
+          <a class="btn btn-ghost" href="#contact" data-si="අප අමතන්න">Talk to us</a>
+        </article>
+      </div>
+      <p class="pnote" data-si="ඔබේ ව්‍යාපාරයට ගැලපෙන්නේ කුමක්දැයි විශ්වාස නැද්ද? නොමිලේ ඩෙමෝ එකක් සඳහා අමතන්න.">Not sure which plan fits? Call us for a free demo at your shop.</p>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <div class="cta">
+        <div>
+          <h2 data-si="ඔබේ කවුන්ටරය <em>අදම ස්මාර්ට් කරන්න.</em>">Make your counter <em>smarter today.</em></h2>
+          <div class="contact"><span data-si="වෙබ් අඩවිය">Website</span> <b>pentarixlabs.com</b><span data-si="අමතන්න">Call</span> <b class="mono">070 723 3731</b></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          <a class="btn btn-primary" href="https://pentarixlabs.com" data-si="pentarixlabs.com වෙත යන්න →">Visit pentarixlabs.com →</a>
+          <a class="btn btn-ghost" href="#features" data-si="විශේෂාංග බලන්න">Browse features</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>© 2026 Pentarix Labs · Point of Sale System</span>
+    <span>pentarixlabs.com · 070 723 3731</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var fmt=function(n){return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});};
+
+  /* hero till: items scan in one by one, then payment, then loop */
+  var ITEMS=[
+    {code:'4791034071203',nm:'Milk powder 400g',sub:'1 × 1,190.00',amt:1190},
+    {code:'4792173000318',nm:'Laundry soap 110g',sub:'3 × 95.00',amt:285,promo:['Buy 2 get 1',-95]},
+    {code:'2100450023500',nm:'Samba rice · weighed',sub:'2.350 kg × 240.00',amt:564},
+    {code:'4791111102217',nm:'Cream crackers 490g',sub:'2 × 260.00',amt:520}
+  ];
+  var lines=document.getElementById('lines'),sub=document.getElementById('sub'),disc=document.getElementById('disc'),tot=document.getElementById('total'),code=document.getElementById('scancode'),beam=document.getElementById('beam'),paid=document.getElementById('paid'),pays=document.querySelectorAll('#pays span');
+  function addLine(it,anim){
+    var li=document.createElement('li'); if(anim) li.className='in';
+    li.innerHTML='<span class="nm">'+it.nm+'</span><span class="amt mono">'+fmt(it.amt)+'</span><span class="sub mono">'+it.sub+'</span>'+(it.promo?'<span class="promo"><span>✓ '+it.promo[0]+'</span><span class="mono">'+fmt(it.promo[1])+'</span></span>':'');
+    lines.appendChild(li);
+  }
+  function totals(n){
+    var s=0,d=0; for(var i=0;i<n;i++){s+=ITEMS[i].amt; if(ITEMS[i].promo) d+=ITEMS[i].promo[1];}
+    sub.textContent=fmt(s); disc.textContent=fmt(d); tot.textContent=fmt(s+d);
+  }
+  function setPays(on){pays.forEach(function(p,i){p.classList.toggle('on',on&&(i===0||i===1));});}
+  function full(){lines.innerHTML='';ITEMS.forEach(function(it){addLine(it,false);});totals(ITEMS.length);setPays(true);paid.classList.remove('off');code.textContent='';}
+  if(reduce){full();}
+  else{
+    var step=0;
+    (function tick(){
+      if(step===0){lines.innerHTML='';totals(0);setPays(false);paid.classList.add('off');}
+      if(step<ITEMS.length){
+        code.textContent=ITEMS[step].code; beam.classList.remove('go'); void beam.offsetWidth; beam.classList.add('go');
+        addLine(ITEMS[step],true); totals(step+1); step++; setTimeout(tick,1300);
+      } else if(step===ITEMS.length){code.textContent='';setPays(true);step++;setTimeout(tick,900);}
+      else if(step===ITEMS.length+1){paid.classList.remove('off');step++;setTimeout(tick,3600);}
+      else {step=0;setTimeout(tick,400);}
+    })();
+  }
+
+
+  /* screen tabs */
+  var CAP={
+    till:{url:'Pentarix POS / Kandy branch / Counter 02 / Checkout',t:'A bill in a few seconds',d:'Scan items, let promotions apply, and split the payment across cash and card. The invoice number is issued the moment it is paid.',st:'තත්පර කිහිපයකින් බිලක්',sd:'භාණ්ඩ ස්කෑන් කරන්න, promotions ස්වයංක්‍රීයව යෙදෙනවා, ගෙවීම මුදල් සහ කාඩ් අතර බෙදන්න. ගෙවූ සැණින් ඉන්වොයිස් අංකය නිකුත් වෙනවා.'},
+    dash:{url:'Pentarix POS / Kandy branch / Overview',t:'How the branch is doing today',d:'Sales, bills, average bill value and returns for the day, with the week\'s trend and how customers paid.',st:'අද ශාඛාව කොහොමද',sd:'දවසේ විකුණුම්, බිල් ගණන, සාමාන්‍ය බිල සහ රිටර්න්, සතියේ ප්‍රවණතාව සහ ගෙවීම් ක්‍රම සමඟ.'},
+    cash:{url:'Pentarix POS / Kandy branch / Counter 02 / Close session',t:'Close the counter with confidence',d:'Count each note and coin, and the system compares it with the float, cash sales, withdrawals and expenses. Any difference is flagged for the manager.',st:'විශ්වාසයෙන් කවුන්ටරය වසන්න',sd:'හැම නෝට්ටුවක්ම ගණන් කරන්න. පද්ධතිය එය ආරම්භක මුදල, මුදල් විකුණුම්, ආපසු ගැනීම් සහ වියදම් සමඟ සසඳා වෙනස කළමනාකරුට පෙන්වනවා.'},
+    promo:{url:'Pentarix POS / Kandy branch / Promotions',t:'Run promotions without a calculator',d:'Set up item, bill, buy-X-get-Y, batch and code promotions with dates. The counter applies them and tracks how often each one is used.',st:'ගණක යන්ත්‍රයක් නැතුව promotions',sd:'භාණ්ඩ, බිල්, Buy X get Y, බැච් සහ කේත promotions දින සමඟ සකසන්න. කවුන්ටරය ඒවා යොදා භාවිතය ට්‍රැක් කරනවා.'},
+    stock:{url:'Pentarix POS / Kandy branch / Stock / Batches',t:'Sell it before it expires',d:'Every batch carries its expiry date. See what is close to expiry, put a batch promotion on it, or send it back to the supplier.',st:'කල් ඉකුත් වෙන්න කලින් විකුණන්න',sd:'හැම බැච් එකකටම කල් ඉකුත් දිනය තියෙනවා. ළඟ එන ඒවා බලා බැච් promotion එකක් දාන්න, නැත්නම් සැපයුම්කරුට ආපසු යවන්න.'}
+  };
+  var curTab='till';
+  function showTab(k){
+    curTab=k; var si=window.POS_LANG==='si';
+    document.querySelectorAll('.tab').forEach(function(t){t.setAttribute('aria-selected',t.dataset.k===k?'true':'false');});
+    document.querySelectorAll('.pane').forEach(function(p){p.hidden=p.id!=='p-'+k;});
+    document.getElementById('url').textContent=CAP[k].url;
+    document.getElementById('ctitle').textContent=si?CAP[k].st:CAP[k].t;
+    document.getElementById('ctext').textContent=si?CAP[k].sd:CAP[k].d;
+  }
+  document.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){showTab(t.dataset.k);});});
+
+  /* nav */
+  var nav=document.getElementById('nav'),mb=document.getElementById('menu-btn'),mm=document.getElementById('mobile-menu'),ic=document.getElementById('menu-ic');
+  function setMenu(o){mm.hidden=!o;mb.setAttribute('aria-expanded',o);mb.setAttribute('aria-label',o?'Close menu':'Open menu');ic.setAttribute('d',o?'M6 6l12 12M18 6 6 18':'M4 7h16M4 12h16M4 17h16');}
+  mb.addEventListener('click',function(){setMenu(mm.hidden);});
+  mm.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){setMenu(false);});});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')setMenu(false);});
+  var ids=['why','flow','features','screens','plans'],links=document.querySelectorAll('.nav-links a');
+  function onScroll(){nav.classList.toggle('scrolled',window.scrollY>20);var c='';ids.forEach(function(id){var el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<140)c=id;});links.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+c);});}
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+  /* ad rotator */
+  var ads={si:document.querySelector('.ad-si'),en:document.querySelector('.ad-en')},dots=document.querySelectorAll('.ad-dots button'),adCur='si',timer=null,ADUR=10000;
+  function showAd(k){
+    adCur=k;['si','en'].forEach(function(n){ads[n].classList.remove('play');ads[n].classList.toggle('on',n===k);});
+    void ads[k].offsetWidth;ads[k].classList.add('play');
+    dots.forEach(function(d){d.style.setProperty('--dur',ADUR+'ms');d.setAttribute('aria-pressed','false');});
+    dots.forEach(function(d){if(d.dataset.ad===k){void d.offsetWidth;d.setAttribute('aria-pressed','true');}});
+    clearTimeout(timer);if(!reduce)timer=setTimeout(function(){showAd(adCur==='si'?'en':'si');},ADUR);
+  }
+  dots.forEach(function(d){d.addEventListener('click',function(){showAd(d.dataset.ad);});});
+
+  /* language */
+  var nodes=document.querySelectorAll('[data-si]');
+  nodes.forEach(function(n){n.dataset.en=n.innerHTML;});
+  var lb=document.querySelectorAll('.lang button');
+  function setLang(l){
+    window.POS_LANG=l;document.documentElement.lang=l;
+    nodes.forEach(function(n){n.innerHTML=l==='si'?n.dataset.si:n.dataset.en;});
+    lb.forEach(function(b){b.setAttribute('aria-pressed',b.dataset.lang===l?'true':'false');});
+    try{localStorage.setItem('pos-lang',l);}catch(e){}
+    showTab(curTab);
+  }
+  lb.forEach(function(b){b.addEventListener('click',function(){setLang(b.dataset.lang);showAd(b.dataset.lang);});});
+  var saved='en';try{saved=localStorage.getItem('pos-lang')||'en';}catch(e){}
+  setLang(saved==='si'?'si':'en');
+  showAd(saved==='si'?'si':'en');
+})();
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* 3D network: head office, 5 branches with customers, 3 suppliers with lorries, data flowing between them */
+(function(){
+  var host=document.getElementById('city3d'); if(!host) return;
+  if(typeof THREE==='undefined'){host.classList.add('nogl');return;}
+  var renderer;
+  try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});}catch(e){host.classList.add('nogl');return;}
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
+  renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  host.appendChild(renderer.domElement);
+
+  var scene=new THREE.Scene(); scene.fog=new THREE.Fog(0x0b1120,70,150);
+  var camera=new THREE.PerspectiveCamera(32,1,0.1,400);
+  scene.add(new THREE.HemisphereLight(0x9fb6ff,0x0b1120,0.5));
+  var sun=new THREE.DirectionalLight(0xffe2c4,1.0); sun.position.set(-30,50,24); sun.castShadow=true;
+  sun.shadow.mapSize.set(2048,2048);
+  var sc=sun.shadow.camera; sc.left=-60;sc.right=60;sc.top=45;sc.bottom=-45;sc.near=1;sc.far=160; sun.shadow.bias=-0.0006;
+  scene.add(sun);
+  var ground=new THREE.Mesh(new THREE.PlaneGeometry(170,130),new THREE.MeshStandardMaterial({color:0x141d31,roughness:.95}));
+  ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+  var grid=new THREE.GridHelper(170,42,0x1e2a44,0x18223a); grid.position.y=0.02; scene.add(grid);
+
+  var rng=(function(s){return function(){s=(s*16807)%2147483647;return (s-1)/2147483646;};})(11);
+  function mat(c,e,ei){return new THREE.MeshStandardMaterial({color:c,emissive:e||0,emissiveIntensity:ei||0,roughness:.6});}
+  function hex(c){return '#'+c.toString(16).padStart(6,'0');}
+  function label(text,color,opt){
+    opt=opt||{}; var c=document.createElement('canvas'),x=c.getContext('2d'),fs=56,font='600 '+fs+'px Figtree, "Segoe UI", sans-serif',dot=!opt.bg;
+    x.font=font; var w=Math.ceil(x.measureText(text).width)+fs*(dot?1.2:.9),h=Math.ceil(fs*1.6); c.width=w;c.height=h; x.font=font;
+    x.fillStyle=opt.bg||'rgba(11,17,32,.8)'; var r=h/2; x.beginPath();x.moveTo(r,0);x.lineTo(w-r,0);x.arc(w-r,r,r,-Math.PI/2,Math.PI/2);x.lineTo(r,h);x.arc(r,r,r,Math.PI/2,Math.PI*1.5);x.fill();
+    var tx=fs*.45; if(dot){x.fillStyle=color;x.beginPath();x.arc(r,r,fs*.22,0,Math.PI*2);x.fill();tx=r+fs*.45;}
+    x.fillStyle=opt.fg||'#e8ecf4'; x.textBaseline='middle'; x.fillText(text,tx,h/2+2);
+    var tex=new THREE.CanvasTexture(c); tex.encoding=THREE.sRGBEncoding; tex.anisotropy=4;
+    var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false})); var s=opt.s||1.8; sp.scale.set(s*w/h,s,1); return sp;
+  }
+  function ring(pos,color,r1,r2,op){var m=new THREE.Mesh(new THREE.RingGeometry(r1,r2,40),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:op,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.set(pos.x,.06,pos.z);scene.add(m);return m;}
+
+  var HQ=new THREE.Vector3(0,0,0), HQTOP=new THREE.Vector3(0,10.5,0), LD=[];
+  var COLORS=[0xff6b0f,0x22c38e,0x8b7bff,0xffc23e,0x3fb7ff];
+  var BR=['Colombo 07','Kandy','Galle','Negombo','Kurunegala'].map(function(n,i){var a=i/5*Math.PI*2+.3;return {n:n,c:COLORS[i],p:new THREE.Vector3(Math.cos(a)*20,0,Math.sin(a)*15),pulse:0};});
+  var SUP=['Dairy supplier','Rice mill','FMCG wholesaler'].map(function(n,i){var a=i/3*Math.PI*2+1.0;return {n:n,p:new THREE.Vector3(Math.cos(a)*38,0,Math.sin(a)*27),flash:0};});
+
+  // head office tower
+  var tower=new THREE.Mesh(new THREE.BoxGeometry(3.6,10,3.6),new THREE.MeshStandardMaterial({color:0x22304d,roughness:.3,metalness:.4}));
+  tower.position.y=5; tower.castShadow=true; scene.add(tower);
+  for(var f=1;f<10;f++){var st=new THREE.Mesh(new THREE.BoxGeometry(3.7,.14,3.7),mat(0x5aa8ff,0x5aa8ff,.9)); st.position.y=f; scene.add(st);}
+  var orb=new THREE.Mesh(new THREE.SphereGeometry(.45,16,12),new THREE.MeshBasicMaterial({color:0xff6b0f})); orb.position.y=11.2; scene.add(orb);
+  var hqHalo=ring(HQ,0x5aa8ff,2.6,3.6,.35), hqPulse=0;
+  LD.push({t:'Head office',c:'#5aa8ff',p:new THREE.Vector3(0,13.6,0),s:2.1});
+
+  // person used for customers
+  function makePerson(){
+    var g=new THREE.Group(), shirts=[0xff6b0f,0x22c38e,0x5aa8ff,0xffc23e,0xe8ecf4,0xf0455a,0xa78bfa];
+    var body=new THREE.Mesh(new THREE.CylinderGeometry(.16,.2,.55,8),mat(shirts[Math.floor(rng()*shirts.length)])); body.position.y=.45; g.add(body);
+    var head=new THREE.Mesh(new THREE.SphereGeometry(.15,10,8),mat(rng()<.5?0xc98d62:0xe9b98d)); head.position.y=.86; g.add(head);
+    var bag=new THREE.Mesh(new THREE.BoxGeometry(.14,.16,.1),mat(0xff6b0f)); bag.position.set(.22,.38,0); g.add(bag);
+    g.traverse(function(o){if(o.isMesh)o.castShadow=true;}); return g;
+  }
+  var walkers=[];
+  BR.forEach(function(b){
+    var g=new THREE.Group();
+    var body=new THREE.Mesh(new THREE.BoxGeometry(5.6,2.6,4),mat(0x2c3a5c)); body.position.y=1.3; body.castShadow=true; body.receiveShadow=true; g.add(body);
+    var glass=new THREE.Mesh(new THREE.BoxGeometry(4.6,1.4,.06),mat(0x9fd0ff,0x9fd0ff,.55)); glass.position.set(0,1.05,2.02); g.add(glass);
+    var roof=new THREE.Mesh(new THREE.BoxGeometry(5.9,.18,4.3),mat(b.c,b.c,.3)); roof.position.y=2.7; g.add(roof);
+    for(var k=0;k<8;k++){var s=new THREE.Mesh(new THREE.BoxGeometry(.72,.12,1),k%2?mat(0xe8ecf4):mat(b.c,b.c,.25)); s.position.set(-2.52+k*.72,2.15,2.45); s.rotation.x=.35; g.add(s);}
+    for(k=0;k<3;k++){var cl=new THREE.Mesh(new THREE.BoxGeometry(.6,.4,.3),mat(0x22c38e,0x22c38e,.9)); cl.position.set(-1.5+k*1.5,.45,2.2); g.add(cl);}
+    g.position.copy(b.p); scene.add(g); g.lookAt(HQ); g.updateMatrixWorld(true);
+    b.halo=ring(b.p,b.c,3.4,4.4,.22);
+    LD.push({t:b.n+' · 3 counters',c:hex(b.c),p:b.p.clone().add(new THREE.Vector3(0,4.4,0)),s:1.6});
+    for(k=0;k<4;k++){
+      var side=(rng()-.5)*3.2, w=makePerson(); scene.add(w);
+      walkers.push({g:w,a:g.localToWorld(new THREE.Vector3(side,0,7.5)),b:g.localToWorld(new THREE.Vector3(side*.35,0,2.4)),ph:k/4+rng()*.1,sp:.09+rng()*.04});
+    }
+    b.out=g.localToWorld(new THREE.Vector3(0,0,7));
+  });
+
+  // supplier warehouses
+  SUP.forEach(function(s){
+    var g=new THREE.Group();
+    var shed=new THREE.Mesh(new THREE.BoxGeometry(7,3,5),mat(0x3a465f)); shed.position.y=1.5; shed.castShadow=true; shed.receiveShadow=true; g.add(shed);
+    var r1=new THREE.Mesh(new THREE.BoxGeometry(7.3,.2,2.9),mat(0x4b5878)); r1.position.set(0,3.45,-1.2); r1.rotation.x=-.45; g.add(r1);
+    var r2=new THREE.Mesh(new THREE.BoxGeometry(7.3,.2,2.9),mat(0x4b5878)); r2.position.set(0,3.45,1.2); r2.rotation.x=.45; g.add(r2);
+    var door=new THREE.Mesh(new THREE.BoxGeometry(3,2.2,.06),mat(0x0c1528)); door.position.set(0,1.1,2.52); g.add(door);
+    for(var k=0;k<7;k++){var bx=new THREE.Mesh(new THREE.BoxGeometry(.7,.7,.7),mat(0xc98b4f)); bx.position.set(-2.4+(k%4)*.8+(k>3?.4:0),.35+(k>3?.7:0),3.3); bx.castShadow=true; g.add(bx);}
+    g.position.copy(s.p); scene.add(g); g.lookAt(HQ); g.updateMatrixWorld(true);
+    s.front=g.localToWorld(new THREE.Vector3(0,0,4.4));
+    s.glow=ring(s.p,0xa78bfa,4.4,5.6,0);
+    LD.push({t:s.n,c:'#ffb23e',p:s.p.clone().add(new THREE.Vector3(0,5.6,0)),s:1.6});
+  });
+
+  // roads from each supplier to its two nearest branches, with lorries
+  var roadMat=mat(0x2c3956), dashMat=new THREE.LineDashedMaterial({color:0x7d8aa6,dashSize:.5,gapSize:.6,transparent:true,opacity:.45});
+  function makeLorry(c){
+    var g=new THREE.Group();
+    var box=new THREE.Mesh(new THREE.BoxGeometry(1.2,.72,.62),mat(0xe8ecf4)); box.position.set(-.15,.48,0); g.add(box);
+    var cab=new THREE.Mesh(new THREE.BoxGeometry(.42,.52,.6),mat(c,c,.25)); cab.position.set(.66,.38,0); g.add(cab);
+    var stripe=new THREE.Mesh(new THREE.BoxGeometry(1.22,.1,.64),mat(c)); stripe.position.set(-.15,.3,0); g.add(stripe);
+    var lamp=new THREE.PointLight(0xfff2d6,.9,3); lamp.position.set(1,.4,0); g.add(lamp);
+    g.traverse(function(o){if(o.isMesh)o.castShadow=true;}); return g;
+  }
+  var vehicles=[];
+  SUP.forEach(function(s){
+    BR.slice().sort(function(a,b){return a.p.distanceTo(s.p)-b.p.distanceTo(s.p);}).slice(0,2).forEach(function(b){
+      var a=s.front.clone(), c=b.out.clone(); a.y=c.y=.08;
+      var d=c.clone().sub(a), mid=a.clone().add(c).multiplyScalar(.5).add(new THREE.Vector3(-d.z,0,d.x).normalize().multiplyScalar(d.length()*.18));
+      var path=new THREE.QuadraticBezierCurve3(a,mid,c);
+      var road=new THREE.Mesh(new THREE.TubeGeometry(path,64,.55,6,false),roadMat); road.scale.y=.12; road.receiveShadow=true; scene.add(road);
+      var ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints(path.getPoints(80).map(function(p){return new THREE.Vector3(p.x,.12,p.z);})),dashMat); ln.computeLineDistances(); scene.add(ln);
+      var l=makeLorry(0xff6b0f); l.scale.setScalar(1.4); scene.add(l);
+      vehicles.push({g:l,path:path,speed:.03+rng()*.015,ph:rng()});
+    });
+  });
+
+  // data arcs
+  var flows=[], bills=1284, billsEl=document.getElementById('n-bills');
+  function addFlow(a,b,h,color,n,speed,onArrive){
+    var m=a.clone().add(b).multiplyScalar(.5); m.y=h; var curve=new THREE.QuadraticBezierCurve3(a,m,b);
+    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(curve.getPoints(60)),new THREE.LineBasicMaterial({color:color,transparent:true,opacity:.16})));
+    for(var i=0;i<n;i++){
+      var p=new THREE.Mesh(new THREE.SphereGeometry(.3,12,10),new THREE.MeshBasicMaterial({color:color}));
+      p.add(new THREE.Mesh(new THREE.SphereGeometry(.7,12,10),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:.22,depthWrite:false})));
+      scene.add(p); flows.push({m:p,curve:curve,ph:i/n+rng()*.1,sp:speed,last:-1,on:onArrive});
+    }
+  }
+  BR.forEach(function(b){
+    var top=b.p.clone(); top.y=2.9;
+    addFlow(top,HQTOP,9,0xff6b0f,2,.22,function(){bills+=1+Math.floor(rng()*3); if(billsEl) billsEl.textContent=bills.toLocaleString('en-US'); hqPulse=1; b.pulse=1;});
+    addFlow(HQTOP,top,13,0x22c38e,1,.15,null);
+  });
+  SUP.forEach(function(s){var top=s.p.clone(); top.y=3.8; addFlow(HQTOP,top,15,0xa78bfa,1,.11,function(){s.flash=1;});});
+
+  // labels and promotion tags
+  var sprites=[], promoSp=[], PROMOS=[{b:1,t:'Buy 2 get 1'},{b:2,t:'−10% today'},{b:4,t:'Code SAVE5'}];
+  function buildLabels(){
+    sprites.forEach(function(s){scene.remove(s);}); sprites=[]; promoSp=[];
+    LD.forEach(function(d){var s=label(d.t,d.c,{s:d.s}); s.position.copy(d.p); scene.add(s); sprites.push(s);});
+    PROMOS.forEach(function(p,i){var s=label(p.t,null,{bg:'rgba(255,107,15,.95)',fg:'#160800',s:1.5}); var base=BR[p.b].p.clone(); base.y=6.5; s.position.copy(base); scene.add(s); sprites.push(s); promoSp.push({s:s,base:base,ph:i/3});});
+  }
+  buildLabels();
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(buildLabels);
+
+  // camera: slow orbit, the scene sits to the right of the hero text on wide screens
+  var angle=-.35;
+  function placeCam(){
+    var w=host.clientWidth,h=host.clientHeight,asp=w/h, r=asp<.9?94:72, s=asp>1.1?17:0;
+    var tx=-Math.cos(angle)*s, tz=Math.sin(angle)*s;
+    camera.position.set(tx+Math.sin(angle)*r,asp<.9?50:40,tz+Math.cos(angle)*r); camera.lookAt(tx,0,tz);
+  }
+  function resize(){var w=host.clientWidth,h=host.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); placeCam();}
+  if(window.ResizeObserver) new ResizeObserver(resize).observe(host); else window.addEventListener('resize',resize);
+  resize();
+
+  var visible=true; if(window.IntersectionObserver) new IntersectionObserver(function(e){visible=e[0].isIntersecting;}).observe(host);
+  var t0=performance.now(), tan=new THREE.Vector3(), pv=new THREE.Vector3();
+  function frame(){
+    requestAnimationFrame(frame);
+    if(!visible) return;
+    var t=(performance.now()-t0)/1000, mt=reduce?8:t;
+    vehicles.forEach(function(v){
+      var k=(v.ph+mt*v.speed)%2, u=k<1?k:2-k, back=k>=1; u=.03+u*.94;
+      var p=v.path.getPointAt(u); v.path.getTangentAt(u,tan); v.g.position.set(p.x,.05,p.z);
+      var a=Math.atan2(tan.z,tan.x); v.g.rotation.y=-(back?a+Math.PI:a);
+    });
+    walkers.forEach(function(w){
+      var u=(w.ph+mt*w.sp)%1; w.g.position.lerpVectors(w.a,w.b,u); w.g.position.y=Math.abs(Math.sin(mt*8+w.ph*10))*.06;
+      var s=u>.85?(1-u)/.15:u<.1?u/.1:1; w.g.scale.setScalar(Math.max(.001,s));
+      w.g.rotation.y=Math.atan2(w.b.x-w.a.x,w.b.z-w.a.z);
+    });
+    flows.forEach(function(f){
+      var u=reduce?f.ph%1:(f.ph+mt*f.sp)%1;
+      if(!reduce&&f.on&&u<f.last) f.on(); f.last=u;
+      f.m.position.copy(f.curve.getPointAt(u)); f.m.scale.setScalar(Math.min(1,u*8,(1-u)*8)+.001);
+    });
+    hqPulse*=.94; hqHalo.scale.setScalar(1+hqPulse*.6); hqHalo.material.opacity=.25+hqPulse*.4; orb.position.y=11.2+Math.sin(mt*2)*.15;
+    BR.forEach(function(b){b.pulse*=.95; b.halo.material.opacity=.15+b.pulse*.5; b.halo.scale.setScalar(1+b.pulse*.5);});
+    SUP.forEach(function(s){s.flash*=.97; s.glow.material.opacity=s.flash*.6; s.glow.scale.setScalar(1+(1-s.flash)*.4);});
+    promoSp.forEach(function(p){var k=(mt/9+p.ph)%1, o=k<.45?Math.min(1,k*8,(.45-k)*8):0; p.s.material.opacity=o; p.s.position.y=p.base.y+Math.sin(mt*2+p.ph*6)*.25;});
+    if(!reduce){angle=-.35+Math.sin(t*.05)*.55; placeCam();}
+    var wide=host.clientWidth/host.clientHeight>1.1;
+    sprites.forEach(function(s){ if(promoSp.some(function(p){return p.s===s;})) return; pv.copy(s.position).project(camera); s.material.opacity=wide?Math.max(0,Math.min(1,(pv.x+.05)/.2)):.85; });
+    renderer.render(scene,camera);
+  }
+  frame();
+})();
+</script>
+<script>
+/* 2D cartoon: supplier -> store room -> shelf -> 3 counters -> head office -> purchase order back to supplier */
+(function(){
+  var svg=document.getElementById('story'); if(!svg) return;
+  var $=function(id){return document.getElementById(id);}, NS='http://www.w3.org/2000/svg';
+  function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+  function cl(v){return v<0?0:v>1?1:v;} function seg(t,a,b){return cl((t-a)/(b-a));}
+  function ease(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;} function back(x){var c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2);}
+  function lerp(a,b,k){return a+(b-a)*k;}
+  function pop(e,k,x,y){var s=k<=0?.001:back(k);e.setAttribute('opacity',k<=0?0:1);e.setAttribute('transform','translate('+x+','+y+') scale('+s+')');}
+  function show(e,on){e.setAttribute('opacity',on?1:0);}
+  function qp(P,u){var v=1-u;return [v*v*P[0]+2*v*u*P[2]+u*u*P[4],v*v*P[1]+2*v*u*P[3]+u*u*P[5]];}
+  function fmt(n){return Math.round(n).toLocaleString('en-US');}
+
+  function person(g,shirt,skin,hair,basket){
+    g.innerHTML='<g class="lg"><rect x="-7" y="-20" width="5" height="20" rx="2" fill="#1e2a44"/></g><g class="rg"><rect x="2" y="-20" width="5" height="20" rx="2" fill="#1e2a44"/></g>'+
+      '<rect x="-10" y="-44" width="20" height="26" rx="7" fill="'+shirt+'"/><circle cx="0" cy="-52" r="8.5" fill="'+skin+'"/><path d="M-8.5 -53a8.5 8.5 0 0 1 17 0z" fill="'+hair+'"/>'+
+      (basket==='bag'?'<g class="bk" opacity="0"><path d="M10 -31q6 -9 12 0" stroke="#ff6b0f" stroke-width="2" fill="none"/><rect x="9" y="-31" width="14" height="10" rx="2" fill="#ff6b0f"/><rect x="11" y="-36" width="4" height="6" fill="#22c38e"/><rect x="16" y="-37" width="4" height="7" fill="#ffb23e"/></g>':'')+
+      (basket==='box'?'<g class="bk" opacity="0"><use href="#box" transform="translate(0,-72) scale(.7)"/></g>':'');
+    return g;
+  }
+  function legs(g,a){g.querySelector('.lg').setAttribute('transform','rotate('+a+' -4 -20)');g.querySelector('.rg').setAttribute('transform','rotate('+(-a)+' 4 -20)');}
+
+  // shelf products, store-room stack, counters, head-office bars
+  var PC=['#e8ecf4','#5aa8ff','#ffb23e','#22c38e','#f0455a','#a78bfa'], boards=[222,272,322], prods=[];
+  for(var i=0;i<24;i++){var s=Math.floor(i/8),j=i%8,h=[24,20,28][s]-(j%3)*2; prods.push(el('rect',{x:428+j*18.5,y:boards[s]-h,width:14,height:h,rx:2,fill:PC[(i*7+s)%6]},$('shelf')));}
+  var SLOTS=[[318,346],[344,346],[370,346],[331,324],[357,324],[344,302]], stack=SLOTS.map(function(p){return el('use',{href:'#box',x:p[0],y:p[1],opacity:0},$('stack'));});
+  var CX=[640,735,830], ctr=$('counters'), mons=[], beams=[], rcs=[];
+  CX.forEach(function(cx,i){
+    var t=el('text',{x:cx,y:240,'text-anchor':'middle','font-weight':700,'font-size':10,fill:'#8e9ab2','letter-spacing':1.5},ctr); t.textContent='COUNTER '+(i+1);
+    el('rect',{x:cx-14,y:286,width:4,height:12,fill:'#5a77a8'},ctr);
+    mons.push(el('rect',{x:cx-28,y:268,width:32,height:20,rx:2,fill:'#163056',stroke:'#5a77a8','stroke-width':2},ctr));
+    el('rect',{x:cx-34,y:296,width:68,height:7,rx:2,fill:'#3a4c74'},ctr);
+    el('rect',{x:cx-30,y:303,width:60,height:55,rx:3,fill:'#2b3b5e'},ctr);
+    beams.push(el('line',{x1:cx+6,y1:293,x2:cx+30,y2:293,stroke:'#f0455a','stroke-width':3,'stroke-linecap':'round',opacity:0},ctr));
+    rcs.push(el('rect',{x:cx+12,y:296,width:12,height:0,fill:'#fbfaf6'},ctr));
+    person(el('g',{transform:'translate('+(cx-48)+',358)'},ctr),'#ff6b0f','#c98d62','#2a2a2a');
+  });
+  var HB=[30,42,36,50,44,58], hqb=HB.map(function(h,i){return el('rect',{x:1004+i*25,y:282-h,width:16,height:h,rx:2,fill:i===5?'#22c38e':'#ff6b0f'},$('hqbars'));});
+  person(el('g',{transform:'translate(1075,358)'},$('people')),'#5aa8ff','#e9b98d','#2a2a2a');
+
+  // people that move
+  var PG=$('people'), stocker=person(el('g',{},PG),'#ff6b0f','#e9b98d','#1b1b1b','box');
+  var cust=[person(el('g',{opacity:0},PG),'#22c38e','#c98d62','#1b1b1b','bag'),person(el('g',{opacity:0},PG),'#a78bfa','#e9b98d','#5a3a1a','bag'),person(el('g',{opacity:0},PG),'#ffb23e','#b07850','#1b1b1b','bag')];
+  var PICK=[470,505,540], SPOT=[684,779,874], OUT=950;
+
+  // badges
+  var BG=$('badges');
+  function pill(text,w,bg,stroke,fg){var g=el('g',{opacity:0},BG); el('rect',{x:-w/2,y:-12,width:w,height:24,rx:12,fill:bg,stroke:stroke,'stroke-width':1.5},g); var t=el('text',{x:0,y:4,'text-anchor':'middle','font-weight':700,'font-size':11,fill:fg},g); t.textContent=text; return g;}
+  var grn=pill('GRN #2041 · 120 items received',190,'#0f3a2b','#22c38e','#4fe0ad');
+  var promos=[pill('3 for 2 · −95',88,'#3a2a10','#ffb23e','#ffb23e'),pill('Biscuits −10%',88,'#3a2a10','#ffb23e','#ffb23e'),pill('SAVE5 · −5%',88,'#3a2a10','#ffb23e','#ffb23e')];
+  var paids=[0,1,2].map(function(){return pill('Paid ✓',70,'#0f3a2b','#22c38e','#4fe0ad');});
+  var low=pill('Low stock · Milk powder',170,'#3a1218','#f0455a','#ff8a98');
+  var po=pill('PO #318 received',130,'#241a44','#a78bfa','#c9b8ff');
+  var sync=pill('Synced · 3 branches',140,'#0b2240','#5aa8ff','#9fd0ff');
+  var pays=[
+    (function(){var g=el('g',{opacity:0},BG);el('rect',{x:-11,y:-8,width:22,height:15,rx:2,fill:'#5aa8ff'},g);el('rect',{x:-11,y:-4,width:22,height:3,fill:'#0b2240'},g);return g;})(),
+    (function(){var g=el('g',{opacity:0},BG);el('rect',{x:-12,y:-7,width:24,height:14,rx:2,fill:'#22c38e'},g);el('circle',{cx:0,cy:0,r:4,fill:'#0f3a2b'},g);return g;})(),
+    (function(){var g=el('g',{opacity:0},BG);el('rect',{x:-13,y:-8,width:26,height:16,rx:3,fill:'#a78bfa'},g);var t=el('text',{x:0,y:4,'text-anchor':'middle','font-weight':800,'font-size':9,fill:'#160830'},g);t.textContent='CREDIT';return g;})()
+  ];
+  function packet(color){var g=el('g',{opacity:0},BG);el('rect',{x:-14,y:-10,width:28,height:20,rx:4,fill:color},g);el('path',{d:'M-10 -6 L0 3 L10 -6',stroke:'#160800','stroke-width':2.2,fill:'none'},g);return g;}
+  var pk=[packet('#ff6b0f'),packet('#ff6b0f'),packet('#ff6b0f')], pkb2=packet('#22c38e'), pkb3=packet('#8b7bff'), pkpo=packet('#a78bfa');
+  var C0=[595,104,840,10,1075,190], C1=[1017,84,1030,140,1060,190], C2=[1132,84,1120,140,1090,190], CPO=[1075,186,600,-60,120,200];
+  function dPath(P){return 'M'+P[0]+' '+P[1]+' Q'+P[2]+' '+P[3]+' '+P[4]+' '+P[5];}
+  $('tr0').setAttribute('d',dPath(C0)); $('tr1').setAttribute('d',dPath(C1)); $('tr2').setAttribute('d',dPath(C2)); $('trpo').setAttribute('d',dPath(CPO));
+  function fly(e,P,k){if(k<=0||k>=1){show(e,0);return;} var p=qp(P,ease(k)); e.setAttribute('opacity',1); e.setAttribute('transform','translate('+p[0]+','+p[1]+')');}
+
+  var lorry=$('lorry'), wheels=lorry.querySelectorAll('.wheel'), fb=[$('f0'),$('f1'),$('f2')], dyn=$('dyn');
+  var steps=document.querySelectorAll('#steps li'), T=24, STAGES=[0,5,9,14,19,24];
+
+  function custState(i,t){
+    var o=i*.35, K=[[9+o,OUT],[11.2+o,PICK[i]],[11.8+o,PICK[i]],[13.6+o,SPOT[i]],[18.4+o,SPOT[i]],[20.6+o,OUT]];
+    if(t<K[0][0]||t>K[5][0]) return null;
+    for(var n=0;n<5;n++){ if(t<=K[n+1][0]){var a=K[n],b=K[n+1],k=seg(t,a[0],b[0]);return {x:lerp(a[1],b[1],ease(k)),walk:a[1]!==b[1],dir:b[1]-a[1],op:Math.min(1,(t-K[0][0])/.3,(K[5][0]-t)/.3)};} }
+    return null;
+  }
+
+  function render(t){
+    dyn.setAttribute('opacity',t>23.5?1-(t-23.5)/.5:t<.3?t/.3:1);
+    // lorry: load at supplier, drive to store, unload, wait, drive back
+    var lx=30, rev=false;
+    if(t>=1.8&&t<3) lx=lerp(30,300,ease(seg(t,1.8,3))); else if(t>=3&&t<21) lx=300; else if(t>=21){lx=lerp(300,30,ease(seg(t,21,22.6))); rev=t<22.6;}
+    lorry.setAttribute('transform',rev?'translate('+(lx+172)+',392) scale(-1,1)':'translate('+lx+',392)');
+    wheels.forEach(function(w){var cx=+w.dataset.cx;w.setAttribute('transform','rotate('+(lx/13*57.3)+' '+cx+' -8)');});
+    var L=0,U=0;
+    fb.forEach(function(b,i){
+      var la=.3+i*.4, kl=seg(t,la,la+.45), ua=3.1+i*.45, ku=seg(t,ua,ua+.5);
+      if(kl>=1)L++; if(ku>=1)U++;
+      if(kl>0&&kl<1) fly(b,[120,330,(120+70+i*32)/2,250,70+i*32,320],kl);
+      else if(ku>0&&ku<1){var s=SLOTS[i*2]; fly(b,[340+i*32,320,(340+s[0])/2,230,s[0],s[1]],ku);}
+      else show(b,0);
+    });
+    var inL=t<4.6?L-U:0; show($('lorrycount'),inL>0); $('lorrycountt').textContent=inL;
+    var sN=t<5?U*2:Math.round(lerp(6,0,seg(t,5,8.6))); stack.forEach(function(s,i){show(s,i<sN);});
+    pop(grn,t<6.6?seg(t,4.2,4.6):0,346,262);
+    // stocker carries boxes to the shelf
+    var sx=395, sw=false, carry=false;
+    if(t>=5&&t<8.6){var ph=(t-5)/1.2*Math.PI*2; sx=380+48*(.5-.5*Math.cos(ph)); sw=true; carry=Math.sin(ph)>0;}
+    stocker.setAttribute('transform','translate('+sx+',358)'+(sw&&!carry?' scale(-1,1)':'')); legs(stocker,sw?Math.sin(t*14)*22:0); show(stocker.querySelector('.bk'),carry);
+    // shelf: filled by staff, emptied a little by customers
+    var n=t<5?6:t<8.6?Math.round(lerp(6,22,seg(t,5,8.6))):22;
+    for(var c=0;c<3;c++) if(t>11.4+c*.35&&t<23.6) n--;
+    prods.forEach(function(p,i){show(p,i<n);});
+    // stock number in the system
+    var sv=t<4.4?48:t<4.9?lerp(48,168,seg(t,4.4,4.9)):168; if(t>17.2) sv-=3*seg(t,17.2,17.8);
+    $('stockn').textContent=Math.round(sv);
+    // customers
+    cust.forEach(function(g,i){
+      var st=custState(i,t); if(!st){show(g,0);return;}
+      g.setAttribute('opacity',st.op); g.setAttribute('transform','translate('+st.x+',358)'+(st.dir<0?' scale(-1,1)':''));
+      legs(g,st.walk?Math.sin(t*14+i)*22:0); show(g.querySelector('.bk'),t>11.5+i*.35);
+    });
+    // checkout at three counters
+    CX.forEach(function(cx,i){
+      var o=i*.4;
+      beams[i].setAttribute('opacity',t>14.2+o&&t<15+o?(Math.sin(t*40)>0?1:.2):0);
+      mons[i].setAttribute('fill',t>14.2+o&&t<17.2+o*.5?'#3a2a10':t>=17.2+o*.5&&t<19?'#0f4a36':'#163056');
+      pop(promos[i],t<17+o?seg(t,15+o,15.35+o):0,cx,212);
+      pop(paids[i],t<19.2?seg(t,17.1+o,17.45+o):0,cx,212);
+      pop(pays[i],t<17.6+o?seg(t,16+o,16.3+o):0,SPOT[i],276);
+      var rh=t<18.8?22*seg(t,16.6+o,17.3+o):0; rcs[i].setAttribute('y',296-rh); rcs[i].setAttribute('height',rh);
+    });
+    // sync to head office from this store and two other branches
+    pk.forEach(function(p,i){fly(p,C0,seg(t,19+i*.35,20.2+i*.35));});
+    fly(pkb2,C1,seg(t,19.4,20.3)); fly(pkb3,C2,seg(t,19.7,20.6));
+    show($('tr0'),t>18.9&&t<21); show($('tr1'),t>19.3&&t<20.8); show($('tr2'),t>19.6&&t<21);
+    $('br2hl').setAttribute('opacity',t>19.3&&t<20?.35:0); $('br3hl').setAttribute('opacity',t>19.6&&t<20.3?.35:0);
+    var g=ease(seg(t,19.8,21.4)); hqb.forEach(function(b,i){var h=HB[i]*(1+.25*g); b.setAttribute('y',282-h); b.setAttribute('height',h);});
+    $('hqnum').textContent='LKR '+fmt(2410600+52960*g);
+    pop(sync,t<23.4?seg(t,20.6,21):0,1075,320);
+    pop(low,t<23.4?seg(t,20.6,21):0,500,176);
+    // purchase order to the supplier
+    fly(pkpo,CPO,seg(t,21.4,22.8)); show($('trpo'),t>21.3&&t<23);
+    $('supglow').setAttribute('opacity',t>22.8&&t<23.8?.18*(1-seg(t,22.8,23.8)):0);
+    pop(po,t<23.6?seg(t,22.8,23.2):0,120,150);
+    // steps
+    steps.forEach(function(li,i){var on=t>=STAGES[i]&&t<STAGES[i+1]; li.classList.toggle('on',on); li.style.setProperty('--p',on?seg(t,STAGES[i],STAGES[i+1]):(t>=STAGES[i+1]?1:0));});
+  }
+
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var t=0,last=null,visible=true,playing=!reduce, STILL=[4.7,8.5,13.5,16.8,22.9];
+  if(window.IntersectionObserver) new IntersectionObserver(function(e){visible=e[0].isIntersecting;}).observe(svg);
+  steps.forEach(function(li){
+    function go(){var s=+li.dataset.s; t=playing?STAGES[s]+.01:STILL[s]; render(t);}
+    li.addEventListener('click',go); li.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+  });
+  function frame(now){
+    requestAnimationFrame(frame);
+    if(last===null) last=now; var dt=Math.min(.05,(now-last)/1000); last=now;
+    if(!playing||!visible) return;
+    t=(t+dt)%T; render(t);
+  }
+  t=reduce?16.8:0; render(t);
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

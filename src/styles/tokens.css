@@ -1,0 +1,9 @@
+:root{
+  --ink:#ffffff; --panel:#f3f4f8; --line:#e2e5ec; --fg:#111827; --muted:#5a6476;
+  --orange:#f25c05; --orange-soft:rgba(242,92,5,.09); --ok:#0e9a68; --bad:#e0384d;
+  --d-ink:#0b1120; --d-panel:#111a2c; --d-line:#22304a; --d-fg:#e8ecf4; --d-muted:#93a0b8; --d-orange:#ff6b0f; --d-ok:#22c38e;
+  --f-display:"Bricolage Grotesque","Noto Sans Sinhala","Segoe UI",system-ui,sans-serif;
+  --f-body:"Figtree","Noto Sans Sinhala","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  color-scheme:light;
+}

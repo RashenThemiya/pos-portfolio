@@ -1,0 +1,15 @@
+/* plans */
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.plan{position:relative;background:var(--ink);border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;min-width:0}
+.plan.pop{border-color:var(--orange)}
+.plan .tag{position:absolute;top:-12px;left:28px;background:var(--orange);color:#160800;font:700 12px/1 var(--f-body);padding:7px 12px;border-radius:999px}
+.plan h3{font-size:22px}
+.pdesc{color:var(--muted);font-size:15px;margin-top:6px}
+.pfit{font:600 13px var(--f-mono);color:var(--orange);margin-top:16px}
+.plan ul{list-style:none;padding:18px 0 0;margin:18px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px;flex:1}
+.plan li{font-size:15px;padding-left:28px;position:relative}
+.plan li::before{content:"✓";position:absolute;left:0;top:2px;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font:700 11px var(--f-body);background:rgba(14,154,104,.14);color:var(--ok)}
+.plan .btn{justify-content:center;margin-top:22px}
+.pnote{color:var(--muted);font-size:14px;margin-top:20px}
+@media (max-width:900px){.plans{grid-template-columns:1fr;max-width:520px}}
+
