@@ -70,3 +70,12 @@ Development and Vite preview provide SPA fallback. On a production static host,
 configure these section paths to serve index.html with HTTP 200, retaining the
 requested URL. For example, an Nginx location can use `try_files $uri $uri/ /index.html;`.
 Do not redirect all routes to /, because that discards the selected section.
+
+## GitHub Pages
+
+`.github/workflows/deploy.yml` builds and deploys on every push to `master`.
+It sets `BASE_PATH=/<repo-name>/` so assets and section links resolve under the
+project URL, and copies `index.html` to each section folder (plus `404.html`) so
+deep links such as `/pos-portfolio/plans` load the page. Local dev and builds
+keep the root base `/`. In the repo settings, set Pages → Source to
+"GitHub Actions".

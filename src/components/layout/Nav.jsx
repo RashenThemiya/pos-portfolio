@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLang } from '../../i18n/LangContext';
+import { sectionPath } from '../../data/navigation';
 import { useScrollSpy } from '../../hooks/useScrollSpy';
 import { BrandMark } from '../shared/BrandMark';
 import { Copy } from '../shared/Copy';
@@ -34,11 +35,11 @@ export function Nav() {
     <header className={scrolled ? 'nav scrolled' : 'nav'} id="nav">
       <div className="wrap">
         <div className="nav-inner">
-          <a className="logo" href="/"><BrandMark width="34" height="30" /><span><small>{nav.brand.name}</small><b>{nav.brand.product}</b></span></a>
+          <a className="logo" href={sectionPath()}><BrandMark width="34" height="30" /><span><small>{nav.brand.name}</small><b>{nav.brand.product}</b></span></a>
           <nav className="nav-links" aria-label={nav.label}><NavLinks labels={nav.links} active={active} /></nav>
           <div className="nav-right">
             <LanguageSwitch />
-            <a className="btn btn-primary nav-cta" href="/plans"><Copy value={nav.demo} /></a>
+            <a className="btn btn-primary nav-cta" href={sectionPath('plans')}><Copy value={nav.demo} /></a>
             <button ref={menuButton} className="menu-btn" id="menu-btn" aria-label={open ? nav.closeMenu : nav.openMenu}
               aria-expanded={open} onClick={() => setOpen(previous => !previous)} aria-controls="mobile-menu">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -50,7 +51,7 @@ export function Nav() {
         <nav className="mobile-menu" id="mobile-menu" aria-label={nav.mobileLabel} hidden={!open}
           onClick={event => { if (event.target.closest('a')) setOpen(false); }}>
           <NavLinks labels={nav.links} />
-          <a className="btn btn-primary" href="/plans"><Copy value={nav.demo} /></a>
+          <a className="btn btn-primary" href={sectionPath('plans')}><Copy value={nav.demo} /></a>
         </nav>
       </div>
     </header>

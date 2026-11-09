@@ -1,13 +1,13 @@
 import { useEffect } from 'react';
-import { navigationIds } from '../data/navigation';
+import { routeIds, sectionFromPath, sectionPath } from '../data/navigation';
 
-const sections = new Set([...navigationIds, 'contact']);
+const sections = new Set(routeIds);
 
 function readRoute() {
   const legacySection = window.location.hash.slice(1);
-  const section = sections.has(legacySection) ? legacySection : window.location.pathname.replace(/^\/|\/$/g, '');
-  const path = sections.has(section) ? `/${section}` : '/';
-  return { path, section: path === '/' ? null : section };
+  const candidate = sections.has(legacySection) ? legacySection : sectionFromPath(window.location.pathname);
+  const section = sections.has(candidate) ? candidate : null;
+  return { path: sectionPath(section), section };
 }
 
 function scrollToRoute(behavior = 'instant') {
@@ -38,7 +38,8 @@ export function useSectionRouting() {
       const link = event.target.closest('a[href]');
       if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
       const url = new URL(link.href);
-      if (url.origin !== window.location.origin || url.hash || (url.pathname !== '/' && !sections.has(url.pathname.slice(1)))) return;
+      const target = sectionFromPath(url.pathname);
+      if (url.origin !== window.location.origin || url.hash || (target && !sections.has(target))) return;
       event.preventDefault();
       navigationCount += 1;
       if (window.location.pathname + window.location.search !== url.pathname + url.search) {

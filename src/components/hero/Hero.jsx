@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useLang } from '../../i18n/LangContext';
 import { INITIAL_BILLS } from '../../data/network';
+import { sectionPath } from '../../data/navigation';
 import { Copy } from '../shared/Copy';
 import { NetworkScene } from './NetworkScene';
 
@@ -20,8 +21,8 @@ export function Hero({ sceneRef, onSceneDispose }) {
           <h1><Copy value={copy.heading} /></h1>
           <p className="lede"><Copy value={copy.description} /></p>
           <div className="ctas">
-            <a className="btn btn-primary" href="/plans"><Copy value={copy.demo} /></a>
-            <a className="btn btn-ghost" href="/screens"><Copy value={copy.screens} /></a>
+            <a className="btn btn-primary" href={sectionPath('plans')}><Copy value={copy.demo} /></a>
+            <a className="btn btn-ghost" href={sectionPath('screens')}><Copy value={copy.screens} /></a>
           </div>
           <div className="facts">{copy.facts.map((fact, index) => <span key={index}><Copy value={fact} /></span>)}</div>
         </div>
